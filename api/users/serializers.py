@@ -17,6 +17,7 @@ from django.contrib.auth.models import Group
 
 # models
 from api.employers.models import Employer
+from api.members.models import Member
 # regex
 import re
 # rest fw jwt settings
@@ -666,6 +667,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             user.status = self.validated_data['status']
             user.is_staff = True
         else:
+            Member.objects.create(user=user).save()
             user.is_staff = False
         # save user
         user.set_password(password)

@@ -22,8 +22,13 @@ def unique_slugify(instance, slug):
     return unique_slug
 
 # Table Members
+def user_upload_file(instance,filename):
+    id = str(instance).split('-')[0]
+    return "user/{id}/avatars/{filename}".format(filename=filename, id=id)
+    # return "account/employer/images/{random}_{filename}".format(filename=filename, random=get_random_string(4)) 
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    avatar = models.ImageField(upload_to=user_upload_file, null=True, blank=True)
     resume = models.CharField(max_length=255, null=True, blank=True)
     salary = models.BigIntegerField(blank=True, null=True)
     type = models.CharField(max_length=100, blank=True, null=True)

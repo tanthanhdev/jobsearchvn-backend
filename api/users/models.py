@@ -43,7 +43,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True)
     address = models.CharField(max_length=255, null=True, blank=True)
-    avatar = models.CharField(max_length=255, null=True, blank=True)
     token = models.CharField(max_length=255, null=True, blank=True)
     forgot_password_token = models.TextField(null=True)
     expired = models.DateTimeField(auto_now_add=True, null=True, blank=True)
