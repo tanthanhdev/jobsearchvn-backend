@@ -76,5 +76,6 @@ log
 **/__pycache__/
 **/.env/
 jobsearchvn/.env
+.env
 
 backend_env
