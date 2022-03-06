@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             name='Member',
             fields=[
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
-                ('avatar', models.ImageField(blank=True, null=True, upload_to=api.members.models.user_upload_file)),
+                ('avatar', models.ImageField(blank=True, null=True, upload_to=api.members.models.member_upload_file)),
                 ('resume', models.CharField(blank=True, max_length=255, null=True)),
                 ('salary', models.BigIntegerField(blank=True, null=True)),
                 ('type', models.CharField(blank=True, max_length=100, null=True)),
