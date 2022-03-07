@@ -33,7 +33,7 @@ class JobViewSet(viewsets.ModelViewSet):
     # permission_classes = []
     pagination_class = None
     lookup_field = 'slug'
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
@@ -48,7 +48,7 @@ class JobViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, slug=None):
         try:
-            queryset = Job.objects.get(slug=slug, user=request.user)
+            queryset = Job.objects.get(slug=slug, employer__user=request.user)
             serializer = JobSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -58,16 +58,14 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer = JobSerializer(data=request.data, context={
             'request': request
         })
-        message = {}
+        messages = {}
         if serializer.is_valid():
-            if not serializer.job_exists():
-                message['job'] = 'Job with this title already exists'
-            if message:
-                return Response(message, status=status.HTTP_400_BAD_REQUEST)
-            if not serializer.tag_exists():
-                message['tag'] = 'Tag not found'
-            if message:
-                return Response(message, status=status.HTTP_204_NO_CONTENT)
+            if not serializer.job_type_exists():
+                messages['Job type'] = "Job type not found"
+            if not serializer.country_exists():
+                messages['Country'] = "Country not found"
+            if messages:
+                return Response(messages, status=status.HTTP_204_NO_CONTENT)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
@@ -80,16 +78,8 @@ class JobViewSet(viewsets.ModelViewSet):
             serializer = JobUpdateSerializer(queryset, data=data, context={
                 'request': request
             })
-            message = {}
             if serializer.is_valid():
-                if not serializer.job_exists(slug):
-                    message['job'] = 'Job with this title already exists'
-                if message:
-                    return Response(message, status=status.HTTP_400_BAD_REQUEST)
-                if not serializer.tag_exists():
-                    message['tag'] = 'Tag not found'
-                if message:
-                    return Response(message, status=status.HTTP_204_NO_CONTENT)
+                serializer.tag_new()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
@@ -117,7 +107,7 @@ class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
     permission_classes = []
     pagination_class = None
     lookup_field = 'slug'
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)

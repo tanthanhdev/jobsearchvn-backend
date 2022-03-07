@@ -64,62 +64,6 @@ class RetriveEmployerSerializer(serializers.ModelSerializer):
         model = Employer
         fields = "__all__"
         
-# Dashboard
-class JobUpdateSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=True)
-    about = serializers.CharField(required=False)
-    preparation_time = serializers.CharField(required=True)
-    cooking_time = serializers.CharField(required=True)
-    ingredient = serializers.CharField(required=True)
-    image = serializers.ImageField(required=False)
-    method = serializers.CharField(required=True)
-    comment = serializers.CharField(required=False)
-    category_id = serializers.CharField(required=False)
-    occasion_id = serializers.CharField(required=False)
-    tag_id = serializers.CharField(required=False)
-    web_link = serializers.CharField(required=False)
-    link = serializers.CharField(required=False)
-    class Meta:
-        model = Job
-        fields = ('id', 'user' ,'title', 'slug', 'about', 'preparation_time', 'cooking_time', 'ingredient', 'image',
-                  'method', 'comment', 'web_link', 'link',
-                  'category_id', 'job_category_name', 'occasion_id', 'job_occasion_name', 
-                  'tag_id',  'job_tag_name')
-        
-    # Get current user login
-    def _current_user(self):
-        request = self.context.get('request', None)
-        if request:
-            return request.user
-        return False
-
-    def _job_user(self):
-        try:
-            current_user = self._current_user()
-            job = Job.objects.get(Q(title__iexact=self.validated_data['title']), Q(user=current_user))
-            return job
-        except:
-            return None
-
-    def job_exists(self, slug):
-        job = self._job_user()
-        if job:
-            if job.slug != slug:
-                return False
-        return True  
-    
-    def tag_exists(self):
-        tag_id = None
-        try:
-            tag_id = self.validated_data['tag_id']
-        except: pass
-        if tag_id:
-            current_user = self._current_user()
-            tag = Tag.objects.filter(Q(id=tag_id), (
-                Q(user=current_user) | Q(status=True) | Q(user__is_staff=True)))
-            if not tag:
-                return False
-        return True
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -130,16 +74,74 @@ class CountrySerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name', 'slug')
+        fields = ("__all__")
+        
+class JobTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobType
+        fields = ('__all__')
+        
+# Dashboard
+class JobUpdateSerializer(serializers.ModelSerializer):
+    # employer = RetriveEmployerSerializer()
+    # job_type = JobTypeSerializer()
+    # country = CountrySerializer()
+    # tag = TagSerializer(read_only=True, many=True)
+    # #
+    # title = serializers.CharField(required=True)
+    # hirer_number = serializers.IntegerField(required=True)
+    # description = serializers.CharField(required=True)
+    # salary = serializers.IntegerField(required=True)
+    # currency = serializers.CharField(required=True)
+    # web_link = serializers.CharField(required=True)
+    # view_number = serializers.IntegerField(required=True)
+    # start_time = serializers.DateTimeField(required=True)
+    # end_time = serializers.DateTimeField(required=True)
+    class Meta:
+        model = Job
+        fields = ('__all__')
+        
+    # Get current user login
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def tag_new(self):
+        tags = self.validated_data.pop('tag', None)
+        if (self.validated_data['tag']):
+            current_user = self._current_user()
+            for tag in tags:
+                try:
+                    Tag.objects.get(Q(slug=tag["slug"]), (
+                        Q(user=current_user) | Q(status=True) | Q(user__is_staff=True)))
+                    return True
+                except: return False
+        return True
+
 
 class JobSerializer(serializers.ModelSerializer):
-    employer = RetriveEmployerSerializer()
-    country = CountrySerializer()
-    tag = TagSerializer(many=True)
+    # title = serializers.CharField(required=True)
+    # hirer_number = serializers.IntegerField(required=True)
+    # description = serializers.CharField(required=True)
+    # salary = serializers.IntegerField(required=True)
+    # currency = serializers.CharField(required=True)
+    # web_link = serializers.CharField(required=True)
+    # start_time = serializers.DateTimeField(required=True)
+    # end_time = serializers.DateTimeField(required=True)
+    #
+    # employer = serializers.CharField(required=False, allow_blank=True)
+    # job_type = CountrySerializer(many=False)
+    # country = CountrySerializer(many=False)
+    job_type_id = serializers.CharField(required=False)
+    country_id = serializers.CharField(required=False)
+    tags = TagSerializer(required=False, many=True, source="tag")
     
     class Meta:
         model = Job
-        fields = "__all__"
+        depth = 1
+        fields = ("__all__")
     
     def _current_user(self):
         request = self.context.get('request', None)
@@ -147,30 +149,47 @@ class JobSerializer(serializers.ModelSerializer):
             return request.user
         return False
     
-    def tag_exists(self):
-        if (self.validated_data['tag_id']):
-            current_user = self._current_user()
-            tag = Tag.objects.filter(Q(id=self.validated_data['tag_id']), (
-                Q(user=current_user) | Q(status=True) | Q(user__is_staff=True)))
-            if not tag:
-                return False
+    def tag_new(self, tags):
+        if (tags):
+            for tag in tags:
+                try:
+                    Tag.objects.get(slug=tag["slug"])
+                except:
+                    Tag.objects.create(name=tag["name"], slug=tag["slug"])
+  
+    def job_type_exists(self):
+        try:
+            JobType.objects.get(id=self.validated_data["job_type_id"])
             return True
-        return True
-    
-    def job_exists(self):
-        current_user = self._current_user()
-        job = Job.objects.filter(Q(title__iexact=self.validated_data['title']), Q(user=current_user))
-        if job:
-            return False
-        return True  
+        except: return False
+        
+    def country_exists(self):
+        try:
+            Country.objects.get(id=self.validated_data["country_id"])
+            return True
+        except: return False
   
     def create(self, validated_data):
         try: 
             current_user = self._current_user()
-            job = Job.objects.create(**validated_data)
-            job.user = current_user
-            job.save()
-            return job
+            if not (current_user.is_staff):
+                return serializers.ValidationError("User is not employer")
+            else:
+                # Field is names tag (source path) so you should use this name when you fetch tags from validated data:
+                # Otherwise tag is still in validated_data and Job.objects.create() raises the error.
+                tags = validated_data.pop('tag', None)
+                employer = current_user.employer
+                job = Job.objects.create(employer=employer, **validated_data)
+                job.save()
+                # Create multiple tag
+                self.tag_new(tags)
+                for tag in tags:
+                    print(tag["slug"])
+                    try:
+                        tag_object = Tag.objects.get(slug=tag["slug"])
+                    except Exception as e:
+                        print(e)
+                    job.tag.add(tag_object)
+                return job
         except:
             return serializers.ValidationError("Bad Request")
-        return serializers.ValidationError("Server Error")

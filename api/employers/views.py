@@ -39,7 +39,7 @@ class EmployerViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, id=None):
         try:
-            queryset = Employer.objects.get(id=id, user=request.user)
+            queryset = Employer.objects.get(pk=id, user=request.user)
             serializer = EmployerSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -48,7 +48,7 @@ class EmployerViewSet(viewsets.ModelViewSet):
     def update(self, request, id, format=None):
         queryset = None
         try:
-            queryset = Employer.objects.get(Q(id=id), Q(user=request.user))
+            queryset = Employer.objects.get(Q(pk=id), Q(user=request.user))
             data = request.data
             serializer = EmployerUpdateSerializer(queryset, data=data, context={
                 'request': request
@@ -80,7 +80,7 @@ class PublicEmployerViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, id=None):
         try:
-            queryset = Employer.objects.get(id=id)
+            queryset = Employer.objects.get(pk=id)
             serializer = PublicEmployerSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:

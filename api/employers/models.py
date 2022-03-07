@@ -14,6 +14,12 @@ from django.dispatch import receiver
 from api.users.models import User
 
 # Create your models here.
+PACKAGE_CHOICES =(
+  ("Free", "free"),
+  ("Basic", "basic"),
+  ("Advance", "advance"),
+)
+
 def unique_slugify(instance, slug):
     model = instance.__class__
     unique_slug = slug
@@ -38,6 +44,7 @@ class Employer(models.Model):
     description = models.TextField(null=True, blank=True)
     web_link = models.CharField(max_length=255, null=True, blank=True)
     status = models.BooleanField(default=False, null=True, blank=True) #True: dang tuyen dung, Flase: khong tuyen dung
+    package_type = models.CharField(max_length=255, null=True, blank=True, choices=PACKAGE_CHOICES, default=PACKAGE_CHOICES[0])
     #
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

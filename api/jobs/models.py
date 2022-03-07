@@ -20,11 +20,7 @@ CURRENCY_CHOICES =(
   ("USD", "dollar"),
 )
 
-PACKAGE_CHOICES =(
-  ("Free", "free"),
-  ("Basic", "basic"),
-  ("Advance", "advance"),
-)
+
 
 LOCATION_CHOICES =(
   ("Tất Cả Địa Điểm", "tat ca dia diem"),
@@ -101,24 +97,19 @@ class JobType(models.Model):
 
 # Table Job
 class Job(models.Model):
-    employer = models.ForeignKey(Employer, on_delete=models.CASCADE, null=True, blank=True, related_name="jobs")
-    job_type = models.ForeignKey(JobType, on_delete=models.CASCADE, null=True, blank=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
-    tag = models.ManyToManyField(Tag, db_table='jobs_tags', related_name='jobs_tags')
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_job")
+    job_type = models.ForeignKey(JobType, on_delete=models.CASCADE, related_name="job_type_job")
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="country_job")
+    tag = models.ManyToManyField(Tag, db_table='jobs_tags')
     #
     title = models.CharField(max_length=255, null=True, blank=True)
     slug = models.CharField(max_length=255, null=True, blank=True)
-    company_name = models.CharField(max_length=255, null=True, blank=True)
-    company_size = models.BigIntegerField(null=True, blank=True)
-    # company_location = models.CharField(max_length=255, null=True, blank=True)
-    company_location = models.CharField(max_length=100, null=True, blank=True, choices=LOCATION_CHOICES, default=LOCATION_CHOICES[0])
     hirer_number = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     salary = models.BigIntegerField(null=True, blank=True)
     currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES, default=CURRENCY_CHOICES[0])
     web_link = models.CharField(max_length=255, null=True, blank=True)
-    view_number = models.BigIntegerField(null=True, blank=True)
-    package_type = models.CharField(max_length=255, null=True, blank=True, choices=PACKAGE_CHOICES, default=PACKAGE_CHOICES[0])
+    view_number = models.BigIntegerField(null=True, blank=True, default=0)
     is_active = models.BooleanField(default=False, null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
