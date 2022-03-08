@@ -67,12 +67,12 @@ class Tag(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-            # slug save
+        # slug save
         if not self.slug:
             self.slug = unique_slugify(self, slugify(self.name))
         # ========================
         super(Tag, self).save(*args, **kwargs)
-
+        
 # Table Job type
 class JobType(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -100,7 +100,7 @@ class Job(models.Model):
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_job")
     job_type = models.ForeignKey(JobType, on_delete=models.CASCADE, related_name="job_type_job")
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="country_job")
-    tag = models.ManyToManyField(Tag, db_table='jobs_tags')
+    tag = models.ManyToManyField(Tag, db_table='jobs_tags', related_name="jobs_tags")
     #
     title = models.CharField(max_length=255, null=True, blank=True)
     slug = models.CharField(max_length=255, null=True, blank=True)
@@ -126,6 +126,7 @@ class Job(models.Model):
     
     def save(self, *args, **kwargs):
         # slug save
-        self.slug = unique_slugify(self, slugify(self.title))
+        if not self.slug:
+            self.slug = unique_slugify(self, slugify(self.title))
         # ========================
         super(Job, self).save(*args, **kwargs)

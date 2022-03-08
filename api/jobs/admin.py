@@ -15,7 +15,7 @@ admin.site.register(JobType, JobTypeAdmin)
 
 class TagAdmin(admin.ModelAdmin):
     model = Tag
-    list_display = ['name', 'slug']
+    list_display = ['pk', 'name', 'slug']
 admin.site.register(Tag, TagAdmin)
 
 class CountryAdmin(admin.ModelAdmin):
