@@ -1049,3 +1049,15 @@ class MySimpleJWTSerializer(TokenObtainPairSerializer):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MySimpleJWTSerializer
+    
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"
+        
+class UserCustomPublicSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name')

@@ -32,5 +32,5 @@ urlpatterns = [
     path('employers/<int:id>/', employer_detail, name='employer_detail'),
     # Unauthenticated
     path('public/employers/', public_job_list, name='public_job_list'),
-    path('public/employers/<int:id>', public_job_detail, name='public_job_detail'),
+    path('public/employers/<int:id>/', public_job_detail, name='public_job_detail'),
 ]

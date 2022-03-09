@@ -22,6 +22,9 @@ from .models import *
 from api.jobs.serializers import (
     JobSerializer,
 )
+from api.users.serializers import (
+    UserSerializer, UserCustomPublicSerializer
+)
 # regex
 import re
 # rest fw jwt settings
@@ -106,9 +109,11 @@ class EmployerUpdateSerializer(serializers.ModelSerializer):
         return True  
 
 class EmployerSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     
     class Meta:
         model = Employer
+        depth = 1
         fields = "__all__"
     
     def _current_user(self):
@@ -136,7 +141,8 @@ class EmployerSerializer(serializers.ModelSerializer):
         return serializers.ValidationError("Server Error")
     
 class PublicEmployerSerializer(serializers.ModelSerializer):
-    jobs = JobSerializer(many=True)
+    user = UserCustomPublicSerializer()
+    employer_job = JobSerializer(many=True)
     class Meta:
         model = Employer
         fields = "__all__"
