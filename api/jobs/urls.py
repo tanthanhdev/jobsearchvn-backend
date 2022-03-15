@@ -43,6 +43,15 @@ tag_unauth_detail = TagUnauthenticatedViewSet.as_view({
     'delete': 'destroy', # delete
 })
 
+# Countries model
+country_unauth_list = CountryUnauthenticatedViewSet.as_view({
+    'get': 'list', # Get lists
+})
+
+country_unauth_detail = CountryUnauthenticatedViewSet.as_view({
+    'get': 'retrieve', # get detail
+})
+
 urlpatterns = [
     # dashboard
     path('jobs/<slug:slug>/', job_detail, name='job_detail'),
@@ -53,4 +62,7 @@ urlpatterns = [
     # Tags model
     path('public/tags/<slug:slug>/', tag_unauth_detail, name='tag_unauth_detail'),
     path('public/tags/', tag_unauth_list, name='tag_unauth_list'),
+    # Countries model
+    path('public/countries/<slug:slug>/', country_unauth_detail, name='country_unauth_detail'),
+    path('public/countries/', country_unauth_list, name='country_unauth_list'),
 ]

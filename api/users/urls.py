@@ -38,4 +38,5 @@ urlpatterns = [
     path('', include('api.employers.urls')), # Employer
     path('', include('api.jobs.urls')), # Job
     path('', include('api.searches.urls')), # searches
+    path('', include('api.cvs.urls')), # cvs
 ]

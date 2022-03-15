@@ -259,3 +259,23 @@ class TagSerializer(serializers.ModelSerializer):
             return tag
         except:
             return serializers.ValidationError("Bad Request")
+        
+class CountrySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+    class Meta:
+        model = Country
+        fields = ("__all__")
+    
+    def country_name_exists(self):
+        try:
+            Country.objects.get(name=self.validated_data["name"])
+            return True
+        except: return False
+  
+    def create(self, validated_data):
+        try: 
+            country = Country.objects.create(**validated_data)
+            country.save()
+            return country
+        except:
+            return serializers.ValidationError("Bad Request")

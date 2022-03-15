@@ -55,6 +55,10 @@ INSTALLED_APPS = [
     'api.employers',
     'api.jobs',
     'api.searches',
+    'api.cvs',
+    'api.chats',
+    'api.reviews',
+    'api.blogs',
 ]
 
 MIDDLEWARE = [
