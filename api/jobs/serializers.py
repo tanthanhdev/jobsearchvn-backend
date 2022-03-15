@@ -231,3 +231,31 @@ class JobSerializer(serializers.ModelSerializer):
                 return job
         except:
             return serializers.ValidationError("Bad Request")
+        
+class TagSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+    class Meta:
+        model = Tag
+        fields = ("__all__")
+    
+    def tag_new(self, name):
+        if (name):
+            try:
+                Tag.objects.get(name=name)
+            except:
+                Tag.objects.create(name=name).save()
+  
+    def tag_name_exists(self):
+        try:
+            Tag.objects.get(name=self.validated_data["name"])
+            return True
+        except: return False
+  
+    def create(self, validated_data):
+        try: 
+            tag = Tag.objects.create(**validated_data)
+            tag.save()
+            self.tag_new(validated_data['name'])
+            return tag
+        except:
+            return serializers.ValidationError("Bad Request")
