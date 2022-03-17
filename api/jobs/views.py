@@ -41,8 +41,11 @@ class JobViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         try:
             queryset = Job.objects.filter(Q(employer__user=request.user))
-            serializer = JobSerializer(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if queryset:
+                serializer = JobSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'job': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
         except:
             return Response({'job': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
     
@@ -123,8 +126,11 @@ class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         try:
             queryset = Job.objects.all()
-            serializer = JobSerializer(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if queryset:
+                serializer = JobSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'job': 'Job not found'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'job': 'Job not found'}, status=status.HTTP_204_NO_CONTENT)
     
