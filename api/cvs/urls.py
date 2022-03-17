@@ -11,21 +11,23 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-# # # Define class
-# tag_list = TagViewSet.as_view({
-#     'get': 'list', # Get lists
-#     'post': 'create' # Create a new
+# Define class
+
+# cv_detail = CvViewSet.as_view({
+#     'get': 'retrieve', # get detail
+#     'patch': 'update', # update
+#     'delete': 'destroy', # delete
 # })
 
-# tag_detail = TagViewSet.as_view({
-#     'get': 'retrieve', # get detail
-#     # 'patch': 'update', # update
-#     # 'delete': 'destroy', # delete
-# })
+cv_list = CvViewSet.as_view({
+    'get': 'list', # Get lists
+    'post': 'create', # Create a new
+    'get': 'retrieve', # get detail
+    'patch': 'update', # update
+    'delete': 'destroy', # delete
+})
 
 urlpatterns = [
-    # # dashboard
-    # url(r'^tags.*$', tag_list),
-    # # url(r'^tags/delete-all.*$', tag_detail, name='tag_delete_all'),
-    # url(r'^tags/<slug:slug>.*$', tag_detail, name='tag_detail'),
+    # url('cvs/<slug:slug>/', cv_detail, name='cvs_detail'),
+    url('cvs/', cv_list, name='cv_list'),
 ]
