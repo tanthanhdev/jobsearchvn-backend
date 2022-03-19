@@ -18,7 +18,7 @@ class CvAdmin(admin.ModelAdmin):
     search_fields = ['title']
     inlines= [CvEducationInline, CvExperienceInline,
               CvSocialActivityInline, CvCertificateInline, CvSkillInline]
-    list_display = ['pk', 'title', 'user', 'cv_user_email']
+    list_display = ['pk', 'title', 'member', 'cv_user_email']
 admin.site.register(Cv, CvAdmin)
 class CvEducationAdmin(admin.ModelAdmin):
     model = CvEducation

@@ -12,7 +12,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 # Models
 from api.members.models import Member
-from api.users.models import User
 
 # Create your models here.
 def unique_slugify(instance, slug):
@@ -52,7 +51,7 @@ class Cv_Design(models.Model):
 
 # Table Cvs
 class Cv(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="member_cvs")
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_cvs")
     cv_career = models.ManyToManyField(Cv_Career, db_table='cvs_cv_carrers', related_name="cvs_cv_carrers")
     cv_design = models.ManyToManyField(Cv_Design, db_table='cvs_cv_designs', related_name="cvs_cv_designs")
     #
