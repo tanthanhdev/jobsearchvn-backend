@@ -19,7 +19,7 @@ from django.contrib.auth.models import Group
 # models
 from .models import *
 # serializers
-from api.users.serializers import UserCustomPublicSerializer
+from api.members.serializers import MemberCustomPublicSerializer
 # regex
 import re
 # rest fw jwt settings
@@ -207,7 +207,7 @@ class CvUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class CvSerializer(serializers.ModelSerializer):
-    user = UserCustomPublicSerializer(required=False)
+    member = MemberCustomPublicSerializer(required=False)
     cv_career = Cv_CareerRetriveSerializer(required=True, many=True)
     cv_design = Cv_DesignRetriveSerializer(required=True, many=True)
     #
@@ -272,14 +272,14 @@ class CvSerializer(serializers.ModelSerializer):
         try: 
             current_user = self._current_user()
             if not (current_user.is_active):
-                return serializers.ValidationError("User is not activation")
+                return serializers.ValidationError("Account member is not activation")
             else:
                 # Field is names cv (source path) so you should use this name when you fetch cvs from validated data:
                 # Otherwise cv is still in validated_data and Cv.objects.create() raises the error.
                 cv_careers = self.initial_data.pop('cv_career', None)
                 cv_designs = self.initial_data.pop('cv_design', None)
                 try:
-                    cv = Cv.objects.create(user=current_user,
+                    cv = Cv.objects.create(member=current_user.member,
                                            title=validated_data['title'],
                                            target_major=validated_data['target_major'])
                 except Exception as e:

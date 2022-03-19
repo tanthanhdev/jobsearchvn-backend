@@ -219,8 +219,8 @@ GROUP_NAME = {
 FRONTEND_SITE_URL=os.getenv('FRONTEND_URL')
 FRONTEND_SITE_URL_LOGIN=os.getenv('FRONTEND_URL') + "/login"
 FRONTEND_SITE_URL_REGISTER_URL=os.getenv('FRONTEND_URL') + "/sign-up"
-FRONTEND_SITE_URL_ACTIVE_ACCOUNT=os.getenv('FRONTEND_URL') + "/active-account?access_token="
-FRONTEND_SITE_URL_RESET_PASSWORD=os.getenv('FRONTEND_URL') + "/reset-password?access_token="
+FRONTEND_SITE_URL_ACTIVE_ACCOUNT=os.getenv('FRONTEND_URL') + "/active-account/"
+FRONTEND_SITE_URL_RESET_PASSWORD=os.getenv('FRONTEND_URL') + "/reset-password/"
 # FRONTEND_SITE_URL_VIEW_RECIPE=os.getenv('FRONTEND_URL') + "/recipes"
 # FRONTEND_SITE_URL_SHARE_RECIPE=os.getenv('FRONTEND_URL') + "/public-recipe"
 # FRONTEND_SITE_URL_REQUEST_RECIPE=os.getenv('FRONTEND_URL') + "/public-create"

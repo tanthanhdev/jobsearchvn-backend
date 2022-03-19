@@ -11,7 +11,7 @@ from django.core.validators import validate_image_file_extension
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 # Models
-from api.users.models import User
+from api.members.models import Member
 
 # Create your models here.
 def unique_slugify(instance, slug):
@@ -51,7 +51,7 @@ class Cv_Design(models.Model):
 
 # Table Cvs
 class Cv(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_cvs")
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_cvs")
     cv_career = models.ManyToManyField(Cv_Career, db_table='cvs_cv_carrers', related_name="cvs_cv_carrers")
     cv_design = models.ManyToManyField(Cv_Design, db_table='cvs_cv_designs', related_name="cvs_cv_designs")
     #
@@ -72,7 +72,7 @@ class Cv(models.Model):
     
     def cv_user_email(self):
         try:
-            return self.user.email
+            return self.member.user.email
         except:
             return None
     
@@ -91,8 +91,8 @@ class CvEducation(models.Model):
     major = models.CharField(max_length=255)
     university_name = models.CharField(max_length=255)
     gpa = models.FloatField()
-    starting_date = models.DateTimeField(null=True, blank=True)
-    completion_date = models.DateTimeField(null=True, blank=True)
+    starting_date = models.DateField(null=True, blank=True)
+    completion_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -161,7 +161,7 @@ class CvSocialActivity(models.Model):
         db_table = 'cv_social_activities'
     
     def __str__(self):
-        return self.name
+        return self.title
     
 # Table cv_certificates
 class CvCertificate(models.Model):

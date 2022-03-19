@@ -33,6 +33,7 @@ class Member(models.Model):
     salary = models.BigIntegerField(blank=True, null=True)
     type = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=255, blank=True, null=True)
+    birthday = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 

@@ -880,10 +880,12 @@ class LoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(required=False, allow_blank=True)
     email = serializers.CharField(required=False, allow_blank=True)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'username']
+        fields = ('__all__')
 
     def get_token(cls, user):
         return RefreshToken.for_user(user)
@@ -969,6 +971,11 @@ class LoginSerializer(serializers.ModelSerializer):
                         "email": user_obj.email,
                         "first_name": user_obj.first_name,
                         "last_name": user_obj.last_name,
+                        "gender": user_obj.gender,
+                        "phone_number": user_obj.phone_number,
+                        "city": user_obj.city,
+                        "address": user_obj.address,
+                        "email_verified": user_obj.email_verified,
                         "is_active": user_obj.is_active,
                         "is_staff": user_obj.is_staff,
                     },
