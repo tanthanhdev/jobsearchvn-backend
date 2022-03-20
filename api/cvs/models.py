@@ -113,8 +113,8 @@ class CvExperience(models.Model):
     job_state = models.BooleanField()
     job_country = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    start_date = models.DateTimeField(null=True, blank=True)
-    end_date = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -150,8 +150,8 @@ class CvSocialActivity(models.Model):
     title = models.CharField(max_length=255)
     unit_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    starting_date = models.DateTimeField(null=True, blank=True)
-    completion_date = models.DateTimeField(null=True, blank=True)
+    starting_date = models.DateField(null=True, blank=True)
+    completion_date = models.DateField(null=True, blank=True)
     #
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

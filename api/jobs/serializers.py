@@ -92,6 +92,7 @@ class JobUpdateSerializer(serializers.ModelSerializer):
     employer_id = serializers.CharField(required=False, allow_blank=True)
     job_type_id = serializers.CharField(required=False, allow_blank=True)
     country_id = serializers.CharField(required=False, allow_blank=True)
+    city_id = serializers.CharField(required=False, allow_blank=True)
     tag = TagSerializer(required=False, many=True)
     # #
     # title = serializers.CharField(required=True)
@@ -105,7 +106,7 @@ class JobUpdateSerializer(serializers.ModelSerializer):
     # end_time = serializers.DateTimeField(required=True)
     class Meta:
         model = Job
-        fields = ('employer_id', 'job_type_id', 'country_id', 'tag', 'title',
+        fields = ('employer_id', 'job_type_id', 'country_id', 'city_id', 'tag', 'title',
                   'hirer_number', 'description', 'salary', 'currency', 'web_link',
                   'view_number', 'start_time', 'end_time', 'created_at', 'updated_at', )
         
@@ -179,6 +180,7 @@ class JobSerializer(serializers.ModelSerializer):
     # country = CountrySerializer(many=False)
     job_type_id = serializers.CharField(required=False)
     country_id = serializers.CharField(required=False)
+    city_id = serializers.CharField(required=False)
     tag = TagAllSerializer(required=False, many=True)
     
     class Meta:
@@ -275,6 +277,26 @@ class CountrySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try: 
             country = Country.objects.create(**validated_data)
+            country.save()
+            return country
+        except:
+            return serializers.ValidationError("Bad Request")
+        
+class CitySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True)
+    class Meta:
+        model = City
+        fields = ("__all__")
+    
+    def country_name_exists(self):
+        try:
+            City.objects.get(name=self.validated_data["name"])
+            return True
+        except: return False
+  
+    def create(self, validated_data):
+        try: 
+            country = City.objects.create(**validated_data)
             country.save()
             return country
         except:

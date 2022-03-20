@@ -14,7 +14,7 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
-from .serializers import JobSerializer, JobUpdateSerializer, TagSerializer, CountrySerializer
+from .serializers import JobSerializer, JobUpdateSerializer, TagSerializer, CountrySerializer, CitySerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -219,24 +219,34 @@ class CountryUnauthenticatedViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'country': 'Country not found'}, status=status.HTTP_404_NOT_FOUND)
-    
-    # def create(self, request, *args, **kwargs):
-    #     serializer = CountrySerializer(data=request.data)
-    #     messages = {}
-    #     if serializer.is_valid():
-    #         if serializer.country_name_exists():
-    #             messages['name'] = "Country name exists"
-    #         if messages:
-    #             return Response(messages, status=status.HTTP_204_NO_CONTENT)
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
 
-    # def destroy(self, request, slug=None, format=None):
-    #     try:
-    #         if slug:
-    #             queryset = Country.objects.get(slug=slug)
-    #             queryset.delete()
-    #             return Response({'message': 'Delete tag successfully'}, status=status.HTTP_204_NO_CONTENT)
-    #     except:
-    #         return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+        
+# City unauthenticated
+class CityUnauthenticatedViewSet(viewsets.ModelViewSet):
+    queryset = City.objects.all()
+    default_serializer_classes = CitySerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = City.objects.all()
+            serializer = CitySerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'city': 'City not found'}, status=status.HTTP_204_NO_CONTENT)
+    
+    def retrieve(self, request, slug=None):
+        try:
+            queryset = City.objects.get(slug=slug)
+            serializer = CitySerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'city': 'City not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    

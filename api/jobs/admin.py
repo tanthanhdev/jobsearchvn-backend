@@ -22,3 +22,8 @@ class CountryAdmin(admin.ModelAdmin):
     model = Country
     list_display = ['name']
 admin.site.register(Country, CountryAdmin)
+
+class CityAdmin(admin.ModelAdmin):
+    model = City
+    list_display = ['name']
+admin.site.register(City, CityAdmin)

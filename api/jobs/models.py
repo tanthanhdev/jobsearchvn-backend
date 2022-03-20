@@ -50,6 +50,20 @@ class Country(models.Model):
         
     def __str__(self):
         return self.name
+  
+# Table City
+class City(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    # 
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'cities'
+        
+    def __str__(self):
+        return self.name
 
 # Table Tag
 class Tag(models.Model):
@@ -100,6 +114,7 @@ class Job(models.Model):
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_job")
     job_type = models.ForeignKey(JobType, on_delete=models.CASCADE, related_name="job_type_job")
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="country_job")
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="city_job")
     tag = models.ManyToManyField(Tag, db_table='jobs_tags', related_name="jobs_tags")
     #
     title = models.CharField(max_length=255, null=True, blank=True)

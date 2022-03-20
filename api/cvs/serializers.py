@@ -211,11 +211,11 @@ class CvSerializer(serializers.ModelSerializer):
     cv_career = Cv_CareerRetriveSerializer(required=True, many=True)
     cv_design = Cv_DesignRetriveSerializer(required=True, many=True)
     #
-    cv_cv_educations = CvEducationSerializer(many=True)
-    cv_cv_experiences = CvExperienceSerializer(many=True)
-    cv_cv_skills = CvSkillSerializer(many=True)
-    cv_cv_social_activities = CvSocialActivitySerializer(many=True)
-    cv_cv_certificates = CvCertificateSerializer(many=True)
+    cv_cv_educations = CvEducationSerializer(required=True, many=True)
+    cv_cv_experiences = CvExperienceSerializer(required=True, many=True)
+    cv_cv_skills = CvSkillSerializer(required=True, many=True)
+    cv_cv_social_activities = CvSocialActivitySerializer(required=True, many=True)
+    cv_cv_certificates = CvCertificateSerializer(required=True, many=True)
     #
     title = serializers.CharField(required=True)
     target_major = serializers.CharField(required=True)
