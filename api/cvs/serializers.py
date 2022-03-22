@@ -207,6 +207,7 @@ class CvUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class CvSerializer(serializers.ModelSerializer):
+    cv_template_id = serializers.CharField(required=False)
     member = MemberCustomPublicSerializer(required=False)
     cv_career = Cv_CareerRetriveSerializer(required=True, many=True)
     cv_design = Cv_DesignRetriveSerializer(required=True, many=True)
@@ -222,7 +223,7 @@ class CvSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cv
         depth = 1
-        fields = ("__all__")
+        fields = ('__all__')
     
     def _current_user(self):
         request = self.context.get('request', None)
@@ -253,7 +254,7 @@ class CvSerializer(serializers.ModelSerializer):
         if (cv_careers):
             for cv_career in cv_careers:
                 try:
-                    Cv_Career.objects.get(pk=cv_career['id'])
+                    Cv_Career.objects.get(pk=cv_career.get('id'))
                     return True
                 except: return False
         else: return False
@@ -263,13 +264,15 @@ class CvSerializer(serializers.ModelSerializer):
         if (cv_designs):
             for cv_design in cv_designs:
                 try:
-                    Cv_Design.objects.get(pk=cv_design['id'])
+                    Cv_Design.objects.get(pk=cv_design.get('id'))
                     return True
                 except: return False
         else: return False
   
     def create(self, validated_data):
         try: 
+            print('validated_Data__________: ')
+            print(validated_data)
             current_user = self._current_user()
             if not (current_user.is_active):
                 return serializers.ValidationError("Account member is not activation")
@@ -281,6 +284,7 @@ class CvSerializer(serializers.ModelSerializer):
                 try:
                     cv = Cv.objects.create(member=current_user.member,
                                            title=validated_data['title'],
+                                           cv_template_id=validated_data['cv_template_id'],
                                            target_major=validated_data['target_major'])
                 except Exception as e:
                     print(e)
@@ -308,3 +312,21 @@ class CvSerializer(serializers.ModelSerializer):
                 return cv
         except:
             return serializers.ValidationError("Bad Request")
+
+class Cv_TemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cv_Template
+        depth = 1
+        fields = ("__all__")
+        
+class Cv_CareerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cv_Career
+        depth = 1
+        fields = ("__all__")
+
+class Cv_DesignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cv_Design
+        depth = 1
+        fields = ("__all__")

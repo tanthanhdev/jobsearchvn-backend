@@ -13,6 +13,12 @@ class CvCertificateInline(admin.TabularInline):
     model = CvCertificate  
 class CvSkillInline(admin.TabularInline):
     model = CvSkill
+#
+class Cv_TemplateAdmin(admin.ModelAdmin):
+    model = Cv_Template
+    search_fields = ['title']
+    list_display = ['pk', 'title']
+admin.site.register(Cv_Template, Cv_TemplateAdmin) 
 class CvAdmin(admin.ModelAdmin):
     model = Cv
     search_fields = ['title']

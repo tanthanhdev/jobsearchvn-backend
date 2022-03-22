@@ -49,11 +49,37 @@ class Cv_Design(models.Model):
     def __str__(self):
         return self.name
 
+# Cv_Templates
+class Cv_Template(models.Model):
+    cv_career = models.ManyToManyField(Cv_Career, db_table='cv_templates_cv_carrers', related_name="cv_templates_cv_carrers")
+    cv_design = models.ManyToManyField(Cv_Design, db_table='cv_templates_cv_designs', related_name="cv_templates_cv_designs")
+    title = models.CharField(max_length=255)
+    slug = models.CharField(max_length=255, null=True, blank=True)
+    view = models.BigIntegerField(blank=True, default=0)
+    status = models.CharField(max_length=100, blank=True, default=1)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'cv_templates'
+    
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        # slug save
+        if not self.slug:
+            self.slug = unique_slugify(self, slugify(self.title))
+        # ========================
+        super(Cv_Template, self).save(*args, **kwargs)
+
 # Table Cvs
 class Cv(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_cvs")
-    cv_career = models.ManyToManyField(Cv_Career, db_table='cvs_cv_carrers', related_name="cvs_cv_carrers")
-    cv_design = models.ManyToManyField(Cv_Design, db_table='cvs_cv_designs', related_name="cvs_cv_designs")
+    cv_template = models.ForeignKey(Cv_Template, on_delete=models.CASCADE, blank=True, null=True, related_name="cv_template_cv")
+    cv_career = models.ManyToManyField(Cv_Career, db_table='cvs_cv_carrers')
+    cv_design = models.ManyToManyField(Cv_Design, db_table='cvs_cv_designs')
     #
     title = models.CharField(max_length=255)
     slug = models.CharField(max_length=255, null=True, blank=True)
@@ -114,7 +140,7 @@ class CvExperience(models.Model):
     job_country = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    end_date = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -167,8 +193,8 @@ class CvSocialActivity(models.Model):
 class CvCertificate(models.Model):
     cv = models.ForeignKey(Cv, on_delete=models.CASCADE, related_name="cv_cv_certificates", null=True, blank=True)
     #
-    name = models.CharField(max_length=255)
-    year = models.IntegerField()
+    name = models.CharField(max_length=255, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
     #
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

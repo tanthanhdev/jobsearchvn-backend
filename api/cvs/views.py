@@ -14,7 +14,7 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
-from .serializers import CvSerializer, CvUpdateSerializer
+from .serializers import CvSerializer, CvUpdateSerializer, Cv_TemplateSerializer, Cv_CareerSerializer, Cv_DesignSerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -67,9 +67,11 @@ class CvViewSet(viewsets.ModelViewSet):
                 messages['cv_career'] = "CV career not exists"
             if messages:
                 return Response(messages, status=status.HTTP_204_NO_CONTENT)
+            print('vao roi ma?????????????????????????????????????????')
+            print(request.data)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)              
 
     def update(self, request, format=None):
         queryset = None
@@ -109,3 +111,116 @@ class CvViewSet(viewsets.ModelViewSet):
                 return Response({'message': 'Delete cv successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+# Cv_Template Unauthenticated
+
+class Cv_TemplateUnauthenticatedViewSet(viewsets.ModelViewSet):
+    queryset = Cv_Template.objects.all()
+    default_serializer_classes = Cv_TemplateSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.queryset
+            query_string = request.GET.get('q')
+            cv_career = request.GET.get('cv_career')
+            cv_design = request.GET.get('cv_design')
+            state = request.GET.get('state')
+            if query_string:
+                query_string = query_string.strip()
+                queryset = queryset.filter(Q(title__icontains=query_string) | Q(slug__icontains=query_string))
+            if cv_career:
+                cv_career = cv_career.strip()
+                queryset = queryset.filter(Q(cv_career__id=cv_career))
+            if cv_design:
+                cv_design = cv_design.strip()
+                queryset = queryset.filter(Q(cv_design__id=cv_design))
+            if state:
+                state = state.strip()
+                if state == "Mới nhất":
+                    queryset = queryset.order_by('-pk')
+                elif state == "Dùng nhiều nhất":
+                    queryset = queryset.order_by('-view')
+            if queryset.count() == 0:
+                return Response({'message': 'Cv_Template not found'}, status=status.HTTP_404_NOT_FOUND)
+            serializer = Cv_TemplateSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
+    
+    def retrieve(self, request, slug=None):
+        try:
+            queryset = Cv_Template.objects.get(slug=slug)
+            serializer = Cv_TemplateSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ViewPublicCv_TemplateViewSet(viewsets.ModelViewSet):
+    queryset = Cv_Template.objects.all()
+    default_serializer_classes = Cv_TemplateSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def setView(self, request, *args, **kwargs):
+        try:
+            if request.method == 'POST':
+                cv = Cv_Template.objects.get(pk=request.data.get('template_id'))
+                cv.view = cv.view + 1
+                cv.save()
+                return Response({'message': "Updated view"}, status=status.HTTP_200_OK)
+            else: return False
+        except:
+            return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
+        
+# Cv_Career Unauthenticated
+class Cv_CareerUnauthenticatedViewSet(viewsets.ModelViewSet):
+    queryset = Cv_Career.objects.all()
+    default_serializer_classes = Cv_CareerSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = Cv_Career.objects.all()
+            serializer = Cv_CareerSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv_career': 'Cv_Career not found'}, status=status.HTTP_204_NO_CONTENT)
+        
+# Cv_Design Unauthenticated
+class Cv_DesignUnauthenticatedViewSet(viewsets.ModelViewSet):
+    queryset = Cv_Design.objects.all()
+    default_serializer_classes = Cv_DesignSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = Cv_Design.objects.all()
+            serializer = Cv_DesignSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv_design': 'Cv_Design not found'}, status=status.HTTP_204_NO_CONTENT)

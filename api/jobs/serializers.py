@@ -217,7 +217,7 @@ class JobSerializer(serializers.ModelSerializer):
         except: return False
   
     def create(self, validated_data):
-        try: 
+        try:
             current_user = self._current_user()
             if not (current_user.is_staff):
                 return serializers.ValidationError("User is not employer")
@@ -225,9 +225,11 @@ class JobSerializer(serializers.ModelSerializer):
                 # Field is names tag (source path) so you should use this name when you fetch tags from validated data:
                 # Otherwise tag is still in validated_data and Job.objects.create() raises the error.
                 tags = validated_data.pop('tag', None)
-                employer = current_user.employer
-                job = Job.objects.create(employer=employer, **validated_data)
-                job.save()
+                try:
+                    job = Job.objects.create(employer=current_user.employer, **validated_data)
+                    job.save()
+                except Exception as e:
+                    print(e)
                 # Create multiple tag
                 self.tag_new(tags, job)
                 return job
