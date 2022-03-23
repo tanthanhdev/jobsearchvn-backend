@@ -183,7 +183,7 @@ class ViewPublicCv_TemplateViewSet(viewsets.ModelViewSet):
                 return Response({'message': "Updated view", 'view': cv.view}, status=status.HTTP_200_OK)
             except:
                 return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
-        
+
 # Cv_Career Unauthenticated
 class Cv_CareerUnauthenticatedViewSet(viewsets.ModelViewSet):
     queryset = Cv_Career.objects.all()

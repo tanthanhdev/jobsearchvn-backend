@@ -1063,8 +1063,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 class UserCustomPublicSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name')
+        fields = ('id', 'first_name', 'last_name', 'is_active', 'is_staff',)
