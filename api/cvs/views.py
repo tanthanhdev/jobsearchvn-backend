@@ -175,15 +175,14 @@ class ViewPublicCv_TemplateViewSet(viewsets.ModelViewSet):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
     
     def setView(self, request, *args, **kwargs):
-        try:
-            if request.method == 'POST':
+        if request.method == "POST":
+            try:
                 cv = Cv_Template.objects.get(pk=request.data.get('template_id'))
                 cv.view = cv.view + 1
                 cv.save()
-                return Response({'message': "Updated view"}, status=status.HTTP_200_OK)
-            else: return False
-        except:
-            return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': "Updated view", 'view': cv.view}, status=status.HTTP_200_OK)
+            except:
+                return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
         
 # Cv_Career Unauthenticated
 class Cv_CareerUnauthenticatedViewSet(viewsets.ModelViewSet):
