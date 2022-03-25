@@ -609,18 +609,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def is_email_exist(self):
         try:
-            user = User.objects.get(username=self.validated_data['email'])
-            if 'inviteEmail' in self.validated_data and 'inviteBy' in self.validated_data and self.validated_data['inviteEmail'] == self.validated_data['email']:
-                if user.is_active == True:
-                    return 'Invitation has expired or you have already used it'
-                # Create Student of coach
-                inviteEmail = self.validated_data['inviteEmail']
-                inviteBy = self.validated_data['inviteBy']
-                try:
-                    StudentsOfCoach.objects.get(coach__email=inviteBy, member__email=inviteEmail)
-                    return False
-                except:
-                    return 'Email exist!'
+            User.objects.get(username=self.validated_data['email'])
             return 'Email exist!'
         except:
             return False
@@ -633,42 +622,19 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if re.match('^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$', password) == None:
             raise serializers.ValidationError(
                 {'password': 'Password field must contain at least one capital letter and must be at least 8 characters'})
-            
-        # if 'inviteEmail' in self.validated_data:
-        #     user = User.objects.get(email=self.validated_data['inviteEmail'])
-        #     user.email = self.validated_data['email']
-        #     user.username = self.validated_data['email']
-        #     user.first_name = self.validated_data['first_name']
-        #     user.last_name = self.validated_data['last_name']
-        #     user.save()
-        # else:
-        #     user = User.objects.create(
-        #         email=self.validated_data['email'],
-        #         username=self.validated_data['email'],
-        #         first_name=self.validated_data['first_name'],
-        #         last_name=self.validated_data['last_name']
-        #     )
-        # if 'inviteEmail' in self.validated_data:
-        #     user = User.objects.get(email=self.validated_data['inviteEmail'])
-        #     user.email = self.validated_data['email']
-        #     user.username = self.validated_data['email']
-        #     user.first_name = self.validated_data['first_name']
-        #     user.last_name = self.validated_data['last_name']
-        #     user.save()
-        # else:
+       
         user = User.objects.create(
             email=self.validated_data['email'],
             username=self.validated_data['email'],
             first_name=self.validated_data['first_name'],
             last_name=self.validated_data['last_name'],
         )
-        if group == "employer":
-            Employer.objects.create(user=user).save()
-            user.status = self.validated_data['status']
-            user.is_staff = True
-        else:
+        if group == "member":
             Member.objects.create(user=user).save()
             user.is_staff = False
+        else:
+            raise serializers.ValidationError(
+                {'message': 'Group is invalid'})
         # save user
         user.set_password(password)
         user.is_active = False # is True if confirmed account,
@@ -707,7 +673,7 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(required=True)
     company_name = serializers.CharField(required=True)
     company_location = serializers.CharField(required=True)
-    status = serializers.CharField(required=False, allow_blank=True)
+    status = serializers.CharField(required=True)
     #hide
     group = serializers.CharField(required=True)
 
@@ -789,23 +755,13 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
 
     def is_email_exist(self):
         try:
-            user = User.objects.get(username=self.validated_data['email'])
-            if 'inviteEmail' in self.validated_data and 'inviteBy' in self.validated_data and self.validated_data['inviteEmail'] == self.validated_data['email']:
-                if user.is_active == True:
-                    return 'Invitation has expired or you have already used it'
-                # Create Student of coach
-                inviteEmail = self.validated_data['inviteEmail']
-                inviteBy = self.validated_data['inviteBy']
-                try:
-                    StudentsOfCoach.objects.get(coach__email=inviteBy, member__email=inviteEmail)
-                    return False
-                except:
-                    return 'Email exist!'
+            User.objects.get(username=self.validated_data['email'])
             return 'Email exist!'
         except:
             return False
 
     def save(self):
+        print(self.validated_data)
         password = self.validated_data['password']
         group = self.validated_data['group']
 
@@ -813,29 +769,7 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
         if re.match('^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$', password) == None:
             raise serializers.ValidationError(
                 {'password': 'Password field must contain at least one capital letter and must be at least 8 characters'})
-            
-        # if 'inviteEmail' in self.validated_data:
-        #     user = User.objects.get(email=self.validated_data['inviteEmail'])
-        #     user.email = self.validated_data['email']
-        #     user.username = self.validated_data['email']
-        #     user.first_name = self.validated_data['first_name']
-        #     user.last_name = self.validated_data['last_name']
-        #     user.save()
-        # else:
-        #     user = User.objects.create(
-        #         email=self.validated_data['email'],
-        #         username=self.validated_data['email'],
-        #         first_name=self.validated_data['first_name'],
-        #         last_name=self.validated_data['last_name']
-        #     )
-        # if 'inviteEmail' in self.validated_data:
-        #     user = User.objects.get(email=self.validated_data['inviteEmail'])
-        #     user.email = self.validated_data['email']
-        #     user.username = self.validated_data['email']
-        #     user.first_name = self.validated_data['first_name']
-        #     user.last_name = self.validated_data['last_name']
-        #     user.save()
-        # else:
+        
         user = User.objects.create(
             email=self.validated_data['email'],
             username=self.validated_data['email'],
@@ -843,14 +777,16 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
             last_name=self.validated_data['last_name'],
         )
         if group == "employer":
-            Employer.objects.create(user=user).save()
+            Employer.objects.create(
+                user=user,
+                company_name=self.validated_data['company_name'],
+                company_location=self.validated_data['company_location'],
+                status=self.validated_data['status']).save()
             user.phone_number = self.validated_data['phone_number']
-            user.employer.company_name = self.validated_data['company_name']
-            user.employer.company_location = self.validated_data['company_location']
-            user.status = self.validated_data['status']
             user.is_staff = True
         else:
-            user.is_staff = False
+            raise serializers.ValidationError(
+                {'message': 'Group is invalid'})
         # save user
         user.set_password(password)
         user.is_active = False # is True if confirmed account,

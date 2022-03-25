@@ -367,7 +367,12 @@ def registration_employer_view(request):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'is_active': user.is_active,
                 'group': group,
+                'phone_number': user.phone_number,
+                'company_location': user.employer.company_location,
+                'company_name': user.employer.company_name,
+                'status': user.employer.status,
             }
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
