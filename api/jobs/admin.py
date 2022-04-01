@@ -3,9 +3,15 @@ from django.contrib import admin
 from .models import *
 
 # Register your models here.
+class BenefitInline(admin.TabularInline):
+    model = Benefit
+class JobAddressInline(admin.TabularInline):
+    model = JobAddress
+    
 class JobAdmin(admin.ModelAdmin):
     model = Job
-    list_display = ['employer', 'title', 'slug']
+    inlines = [BenefitInline, JobAddressInline]
+    list_display = ['title', 'slug']
 admin.site.register(Job, JobAdmin)
 
 class JobTypeAdmin(admin.ModelAdmin):
