@@ -73,7 +73,8 @@ class Employer(models.Model):
         
     def save(self, *args, **kwargs):
         # slug save
-        self.slug = unique_slugify(self, slugify(self.company_name))
+        if not self.slug:
+            self.slug = unique_slugify(self, slugify(self.company_name))
         # ========================
         super(Employer, self).save(*args, **kwargs)
 

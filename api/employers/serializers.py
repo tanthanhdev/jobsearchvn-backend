@@ -25,6 +25,7 @@ from api.jobs.serializers import (
 from api.users.serializers import (
     UserSerializer, UserCustomPublicSerializer
 )
+from api.reviews.serializers import (ReviewCustomSerializer)
 # regex
 import re
 # rest fw jwt settings
@@ -141,8 +142,10 @@ class EmployerSerializer(serializers.ModelSerializer):
         return serializers.ValidationError("Server Error")
     
 class PublicEmployerSerializer(serializers.ModelSerializer):
+    pk = serializers.CharField(required=False)
     user = UserCustomPublicSerializer()
     employer_job = JobSerializer(many=True)
+    employer_reviews = ReviewCustomSerializer(many=True)
     class Meta:
         model = Employer
         fields = "__all__"

@@ -63,6 +63,12 @@ class RetriveEmployerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employer
         fields = "__all__"
+     
+class CitySerializer(serializers.ModelSerializer):
+    pk = serializers.IntegerField(required=False)
+    class Meta:
+        model = City
+        fields = "__all__"
         
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -87,26 +93,32 @@ class JobTypeSerializer(serializers.ModelSerializer):
         model = JobType
         fields = ('__all__')
         
+
+class JobAddressSerializer(serializers.ModelSerializer):
+    city_id = serializers.CharField(required=False, allow_blank=True)
+    city = CitySerializer()
+    class Meta:
+        model = JobAddress
+        fields = ('__all__')
+        
+class BenefitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Benefit
+        fields = ('__all__')
+
 # Dashboard
 class JobUpdateSerializer(serializers.ModelSerializer):
     employer_id = serializers.CharField(required=False, allow_blank=True)
     job_type_id = serializers.CharField(required=False, allow_blank=True)
     country_id = serializers.CharField(required=False, allow_blank=True)
-    city_id = serializers.CharField(required=False, allow_blank=True)
     tag = TagSerializer(required=False, many=True)
-    # #
-    # title = serializers.CharField(required=True)
-    # hirer_number = serializers.IntegerField(required=True)
-    # description = serializers.CharField(required=True)
-    # salary = serializers.IntegerField(required=True)
-    # currency = serializers.CharField(required=True)
-    # web_link = serializers.CharField(required=True)
-    # view_number = serializers.IntegerField(required=True)
-    # start_time = serializers.DateTimeField(required=True)
-    # end_time = serializers.DateTimeField(required=True)
+    # foreign object
+    job_job_addresses = JobAddressSerializer(required=True, many=True)
+    job_benefits = BenefitSerializer(required=True, many=True)
+    
     class Meta:
         model = Job
-        fields = ('employer_id', 'job_type_id', 'country_id', 'city_id', 'tag', 'title',
+        fields = ('employer_id', 'job_type_id', 'country_id', 'tag', 'title',
                   'hirer_number', 'description', 'salary', 'currency', 'web_link',
                   'view_number', 'start_time', 'end_time', 'created_at', 'updated_at', )
         
@@ -139,7 +151,6 @@ class JobUpdateSerializer(serializers.ModelSerializer):
             return True
         except: return False
         
-        
     def update_tags(self, tags):
         tag_ids = []
         for tag in tags:
@@ -166,23 +177,12 @@ class JobUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class JobSerializer(serializers.ModelSerializer):
-    # title = serializers.CharField(required=True)
-    # hirer_number = serializers.IntegerField(required=True)
-    # description = serializers.CharField(required=True)
-    # salary = serializers.IntegerField(required=True)
-    # currency = serializers.CharField(required=True)
-    # web_link = serializers.CharField(required=True)
-    # start_time = serializers.DateTimeField(required=True)
-    # end_time = serializers.DateTimeField(required=True)
-    #
-    # employer = serializers.CharField(required=False, allow_blank=True)
-    # job_type = CountrySerializer(many=False)
-    # country = CountrySerializer(many=False)
     job_type_id = serializers.CharField(required=False)
     country_id = serializers.CharField(required=False)
-    city_id = serializers.CharField(required=False)
     tag = TagAllSerializer(required=False, many=True)
-    
+    # foreign object
+    job_job_addresses = JobAddressSerializer(required=True, many=True)
+    job_benefits = BenefitSerializer(required=True, many=True)
     class Meta:
         model = Job
         depth = 1
@@ -222,17 +222,42 @@ class JobSerializer(serializers.ModelSerializer):
             if not (current_user.is_staff):
                 return serializers.ValidationError("User is not employer")
             else:
-                # Field is names tag (source path) so you should use this name when you fetch tags from validated data:
-                # Otherwise tag is still in validated_data and Job.objects.create() raises the error.
-                tags = validated_data.pop('tag', None)
                 try:
-                    job = Job.objects.create(employer=current_user.employer, **validated_data)
+                    # Field is names cv (source path) so you should use this name when you fetch cvs from validated data:
+                    # Otherwise cv is still in validated_data and Cv.objects.create() raises the error.
+                    # job = Job.objects.create(employer=current_user.employer, **validated_data)
+                    tags = validated_data.pop('tag', None)
+                    try:
+                        job = Job.objects.create(employer=current_user.employer,
+                                            job_type_id=validated_data['job_type_id'],
+                                            country_id=validated_data['country_id'],
+                                            title=validated_data['title'],
+                                            hirer_number=validated_data['hirer_number'],
+                                            description=validated_data['description'],
+                                            job_requirement=validated_data['job_requirement'],
+                                            salary=validated_data['salary'],
+                                            currency=validated_data['currency'],
+                                            web_link=validated_data['web_link'],
+                                            start_time=validated_data['start_time'],
+                                            end_time=validated_data['end_time'],
+                                            )
+                    except Exception as e:
+                        print(e)
+                        print('___________________________________')
                     job.save()
+                    print(validated_data)
+                    # Add foreign key inlines
+                    job_job_addresses = validated_data.pop('job_job_addresses', None)
+                    for job_job_address in job_job_addresses:
+                        JobAddress.objects.create(job=job, **job_job_address)
+                    job_benefits = validated_data.pop('job_benefits', None)
+                    for job_benefit in job_benefits:
+                        Benefit.objects.create(job=job, **job_benefit)
+                    # Add or create multiple tag
+                    self.tag_new(tags, job)
+                    return job
                 except Exception as e:
                     print(e)
-                # Create multiple tag
-                self.tag_new(tags, job)
-                return job
         except:
             return serializers.ValidationError("Bad Request")
         

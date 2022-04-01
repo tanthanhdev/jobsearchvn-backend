@@ -20,6 +20,10 @@ CURRENCY_CHOICES =(
   ("USD", "dollar"),
 )
 
+ICON_BENEFIT_CHOICES =(
+  ("book", "book"),
+  ("person", "person"),
+)
 
 
 LOCATION_CHOICES =(
@@ -108,19 +112,19 @@ class JobType(models.Model):
             self.slug = unique_slugify(self, slugify(self.name))
         # ========================
         super(JobType, self).save(*args, **kwargs)
-
+        
 # Table Job
 class Job(models.Model):
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_job")
     job_type = models.ForeignKey(JobType, on_delete=models.CASCADE, related_name="job_type_job")
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="country_job")
-    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="city_job")
     tag = models.ManyToManyField(Tag, db_table='jobs_tags', related_name="jobs_tags")
     #
     title = models.CharField(max_length=255, null=True, blank=True)
     slug = models.CharField(max_length=255, null=True, blank=True)
     hirer_number = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    job_requirement = models.TextField(null=True, blank=True)
     salary = models.BigIntegerField(null=True, blank=True)
     currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES, default=CURRENCY_CHOICES[0])
     web_link = models.CharField(max_length=255, null=True, blank=True)
@@ -145,3 +149,35 @@ class Job(models.Model):
             self.slug = unique_slugify(self, slugify(self.title))
         # ========================
         super(Job, self).save(*args, **kwargs)
+        
+# Table JobAddress
+class JobAddress(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="city_job_addresses", null=True, blank=True)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="job_job_addresses", null=True, blank=True)
+    #
+    address = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'job_addresses'
+    
+    def __str__(self):
+        return self.address
+    
+# Part of description for job
+class Benefit(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="job_benefits", null=True, blank=True)
+    #
+    benefit = models.CharField(max_length=255, null=True, blank=True)
+    icon = models.CharField(max_length=255, null=True, blank=True, default=False, choices=ICON_BENEFIT_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'benefits'
+    
+    def __str__(self):
+        return self.benefit
