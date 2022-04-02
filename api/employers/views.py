@@ -62,7 +62,7 @@ class EmployerViewSet(viewsets.ModelViewSet):
         
 # Public employer
 class PublicEmployerViewSet(viewsets.ModelViewSet):
-    queryset = Employer.objects.all()
+    queryset = Employer.objects.filter(status=True)
     default_serializer_classes = PublicEmployerSerializer
     permission_classes = []
     pagination_class = CustomPagination
@@ -70,9 +70,6 @@ class PublicEmployerViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
-    
-    def get_queryset(self):
-        return Employer.objects.all()
     
     def list(self, request, *args, **kwargs):
         try:
@@ -90,7 +87,7 @@ class PublicEmployerViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, slug=None):
         try:
-            queryset = Employer.objects.get(slug=slug)
+            queryset = Employer.objects.get(slug=slug, status=True)
             serializer = PublicEmployerSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:

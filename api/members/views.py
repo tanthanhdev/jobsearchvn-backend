@@ -81,7 +81,7 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
                 queryset.delete()
                 return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_204_NO_CONTENT)
             else:
-                queryset = Follow.objects.get(Q(pk=id), Q(member__user=request.user))
+                queryset = Follow.objects.get(Q(employer_id=id), Q(member__user=request.user))
                 queryset.delete()
                 return Response({'message': 'Delete follow successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:

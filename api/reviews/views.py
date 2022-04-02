@@ -23,7 +23,7 @@ from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from api.users.permissions import IsTokenValid
+from api.users.permissions import IsTokenValid, IsMember
 from operator import or_, and_
 from django.core import serializers
 
@@ -32,7 +32,7 @@ from api.users import status_http
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     default_serializer_classes = ReviewSerializer
-    permission_classes = [IsAuthenticated, IsTokenValid]
+    permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
     # permission_classes = []
     pagination_class = None
     lookup_field = 'slug'
