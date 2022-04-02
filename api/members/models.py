@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 # Models
 from api.users.models import User
+from api.employers.models import Employer
 
 # Create your models here.
 def unique_slugify(instance, slug):
@@ -26,6 +27,7 @@ def member_upload_file(instance,filename):
     id = str(instance).split('-')[0]
     return "member/{id}/avatars/{filename}".format(filename=filename, id=id)
     # return "account/employer/images/{random}_{filename}".format(filename=filename, random=get_random_string(4)) 
+
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     avatar = models.ImageField(upload_to=member_upload_file, null=True, blank=True)
@@ -38,7 +40,7 @@ class Member(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        ordering = ('user',)
+        ordering = ('-user',)
         db_table = 'members'
     
     def __str__(self):
@@ -58,3 +60,13 @@ class Member(models.Model):
             self.image.delete()
         except: pass
         super().delete()  
+        
+
+class Follow(models.Model):
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_follows")
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_follows")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'follows'  

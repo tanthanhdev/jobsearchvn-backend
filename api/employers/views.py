@@ -22,7 +22,8 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 from api.users.permissions import IsTokenValid
 from operator import or_, and_
-from django.core import serializers
+# custom
+from api.users.custom_pagination import CustomPagination
 
 from api.users import status_http
 
@@ -64,16 +65,25 @@ class PublicEmployerViewSet(viewsets.ModelViewSet):
     queryset = Employer.objects.all()
     default_serializer_classes = PublicEmployerSerializer
     permission_classes = []
-    pagination_class = None
+    pagination_class = CustomPagination
     parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
     
+    def get_queryset(self):
+        return Employer.objects.all()
+    
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Employer.objects.all()
-            serializer = PublicEmployerSerializer(queryset, many=True)
+            # The ViewSet class inherits from APIView. The relation is: View(in Django) -> APIView -> ViewSet
+            # The ModelViewSetclass inherits from GenericViewSet . The relation is: View(in Django) -> APIView -> GenericAPIView -> GenericViewSet -> ModelViewSet
+            # pagination_class is add in GenericAPIView, so you can't use it in a class inherits from APIView.You can try viewsets.GenericViewSet.
+            page = self.paginate_queryset(self.queryset)
+            if page is not None:
+                serializer = PublicEmployerSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = PublicEmployerSerializer(self.queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'employer': 'Employer not found'}, status=status.HTTP_204_NO_CONTENT)

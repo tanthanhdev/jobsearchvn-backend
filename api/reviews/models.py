@@ -20,8 +20,6 @@ CURRENCY_CHOICES =(
   ("USD", "dollar"),
 )
 
-
-
 LOCATION_CHOICES =(
   ("Tất Cả Địa Điểm", "tat ca dia diem"),
   ("Đà Nẵng", "da nang"),

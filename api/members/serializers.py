@@ -20,6 +20,7 @@ from django.contrib.auth.models import Group
 from .models import *
 # serializers
 from api.users.serializers import UserCustomPublicSerializer
+from api.employers.serializers import EmployerRetriveSerializer
 # regex
 import re
 # rest fw jwt settings
@@ -66,3 +67,47 @@ class MemberCustomPublicSerializer(serializers.ModelSerializer):
         model = Member
         depth = 1
         fields = ("__all__")
+        
+class MemberRetriveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ("__all__")
+
+class FollowSerializer(serializers.ModelSerializer):
+    employer_id = serializers.CharField(required=True)
+    member = MemberRetriveSerializer(required=False)
+    employer = EmployerRetriveSerializer(required=False)
+    class Meta:
+        model = Follow
+        fields = ("__all__")
+        
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+ 
+    def employer_exists(self):
+        employer = Employer.objects.filter(pk=self.validated_data['employer_id'])
+        if employer:
+            return True
+        return False
+    
+    def follow_exists(self):
+        try:
+            Follow.objects.get(Q(employer_id=self.validated_data['employer_id'])
+                                      , Q(member=self._current_user().member))
+            return True
+        except:
+            return False
+  
+    def create(self, validated_data):
+        try:
+            current_user = self._current_user()
+            follow = Follow.objects.create(employer_id=validated_data['employer_id'],
+                                            member=current_user.member)
+            follow.save()
+            return follow
+        except:
+            return serializers.ValidationError("Bad Request")
+        return serializers.ValidationError("Server Error")

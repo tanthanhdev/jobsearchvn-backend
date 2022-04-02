@@ -657,7 +657,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         send = EmailMessage(email_subject, message,
                             from_email=settings.EMAIL_FROM, to=[self.validated_data['email']])
         send.content_subtype = 'html'
-        send.send()
+        try:
+            send.send()
+        except Exception as e:
+            print(e)
+            user.delete()
         return True
 
 class RegistrationEmployerSerializer(serializers.ModelSerializer):
@@ -809,7 +813,11 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
         send = EmailMessage(email_subject, message,
                             from_email=settings.EMAIL_FROM, to=[self.validated_data['email']])
         send.content_subtype = 'html'
-        send.send()
+        try:
+            send.send()
+        except Exception as e:
+            print(e)
+            user.delete()
         return True
 
 class LoginSerializer(serializers.ModelSerializer):

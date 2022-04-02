@@ -149,3 +149,9 @@ class PublicEmployerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employer
         fields = "__all__"
+        
+class EmployerRetriveSerializer(serializers.ModelSerializer):
+    pk = serializers.CharField(required=False)
+    class Meta:
+        model = Employer
+        fields = "__all__"

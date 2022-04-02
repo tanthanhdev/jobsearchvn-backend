@@ -170,7 +170,7 @@ class JobAddress(models.Model):
 class Benefit(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="job_benefits", null=True, blank=True)
     #
-    benefit = models.CharField(max_length=255, null=True, blank=True)
+    benefit = models.CharField(max_length=255)
     icon = models.CharField(max_length=255, null=True, blank=True, default=False, choices=ICON_BENEFIT_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

@@ -11,3 +11,21 @@ class IsTokenValid(BasePermission):
     
     def has_permission(self, request, view):
         return request.user and request.user.token is not None
+    
+class IsMember(BasePermission):
+    """
+    Allows access only to use in member roles.
+    """
+    message = {'message': 'You are not a member.'}
+    
+    def has_permission(self, request, view):
+        return request.user and request.user.is_active and request.user.is_staff is not True
+    
+class IsEmployer(BasePermission):
+    """
+    Allows access only to use in employer roles.
+    """
+    message = {'message': 'You are not a employer.'}
+    
+    def has_permission(self, request, view):
+        return request.user and request.user.is_active and request.user.is_staff
