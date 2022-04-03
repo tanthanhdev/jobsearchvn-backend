@@ -59,6 +59,18 @@ city_unauth_list = CityUnauthenticatedViewSet.as_view({
 city_unauth_detail = CityUnauthenticatedViewSet.as_view({
     'get': 'retrieve', # get detail
 })
+# Campaigns
+campaign_detail = CampaignViewSet.as_view({
+    'get': 'retrieve', # get detail
+    'patch': 'update', # update
+    'delete': 'destroy', # delete
+})
+
+campaign_list = CampaignViewSet.as_view({
+    'get': 'list', # Get lists
+    'post': 'create', # Create a new
+    'delete': 'destroy', # delete all
+})
 
 urlpatterns = [
     # dashboard
@@ -76,4 +88,7 @@ urlpatterns = [
     # Cities model
     path('public/cities/<slug:slug>/', city_unauth_detail, name='city_unauth_detail'),
     path('public/cities/', city_unauth_list, name='city_unauth_list'),
+    # Campaigns
+    path('campaigns/<slug:slug>/', campaign_detail, name='campaign_detail'),
+    path('campaigns/', campaign_list, name='campaign_list'),
 ]

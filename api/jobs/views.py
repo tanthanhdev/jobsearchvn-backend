@@ -15,13 +15,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime    
 
 from .models import *
-from .serializers import JobSerializer, JobUpdateSerializer, TagSerializer, CountrySerializer, CitySerializer
+from .serializers import JobSerializer, JobUpdateSerializer, TagSerializer, CountrySerializer, CitySerializer, CampaignSerializer, CampaignUpdateSerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from api.users.permissions import IsTokenValid
+from api.users.permissions import IsTokenValid, IsEmployer
 from operator import or_, and_
 from django.core import serializers
 
@@ -30,7 +30,7 @@ from api.users import status_http
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
     default_serializer_classes = JobSerializer
-    permission_classes = [IsAuthenticated, IsTokenValid]
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
     # permission_classes = []
     pagination_class = None
     lookup_field = 'slug'
@@ -111,7 +111,88 @@ class JobViewSet(viewsets.ModelViewSet):
                 return Response({'message': 'Delete job successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+# Campaigns
+class CampaignViewSet(viewsets.ModelViewSet):
+    queryset = Campaign.objects.all()
+    default_serializer_classes = CampaignSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
     
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = Campaign.objects.all()
+            if queryset:
+                serializer = CampaignSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    def retrieve(self, request, slug=None):
+        try:
+            queryset = Campaign.objects.get(slug=slug)
+            serializer = CampaignSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, *args, **kwargs):
+        serializer = CampaignSerializer(data=request.data, context={
+            'request': request
+        })
+        messages = {}
+        if serializer.is_valid():
+            if not serializer.city_exists():
+                messages['city'] = "City not found"
+            if messages:
+                return Response(messages, status=status.HTTP_404_NOT_FOUND)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
+
+    def update(self, request, slug, format=None):
+        queryset = None
+        try:
+            queryset = Campaign.objects.get(slug=slug)
+            data = request.data
+            serializer = CampaignUpdateSerializer(queryset, data=data, context={
+                'request': request
+            })
+            messages = {}
+            if serializer.is_valid():
+                if not serializer.city_exists():
+                    messages['city'] = "City not found"
+                if messages:
+                    return Response(messages, status=status.HTTP_404_NOT_FOUND)
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': 'Campaign update Not Found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, slug=None, format=None):
+        try:
+            if not slug:
+                queryset = Campaign.objects.all()
+                if not queryset:
+                    return Response({'message': 'Campaign Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                queryset.delete()
+                return Response({'message': 'Delete all campaign successfully'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                queryset = Campaign.objects.get(slug=slug)
+                queryset.delete()
+                return Response({'message': 'Delete campaign successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
 # Job unauthenticated
 class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()

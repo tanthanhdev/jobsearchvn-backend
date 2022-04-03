@@ -34,7 +34,7 @@ def _is_token_valid(self, access_token):
     try:
         access_token = AccessToken(access_token)
         user_id = access_token['user_id']
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(pk=user_id)
         return True
     except:
         return False
@@ -43,7 +43,7 @@ def get_user_token(self, access_token):
     try:
         access_token = AccessToken(access_token)
         user_id = access_token['user_id']
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(pk=user_id)
         return user
     except:
         return False
@@ -96,7 +96,7 @@ class JobTypeSerializer(serializers.ModelSerializer):
 
 class JobAddressSerializer(serializers.ModelSerializer):
     city_id = serializers.CharField(required=False, allow_blank=True)
-    city = CitySerializer()
+    city = CitySerializer(required=False)
     class Meta:
         model = JobAddress
         fields = ('__all__')
@@ -206,13 +206,13 @@ class JobSerializer(serializers.ModelSerializer):
   
     def job_type_exists(self):
         try:
-            JobType.objects.get(id=self.validated_data["job_type_id"])
+            JobType.objects.get(pk=self.validated_data["job_type_id"])
             return True
         except: return False
         
     def country_exists(self):
         try:
-            Country.objects.get(id=self.validated_data["country_id"])
+            Country.objects.get(pk=self.validated_data["country_id"])
             return True
         except: return False
   
@@ -260,7 +260,88 @@ class JobSerializer(serializers.ModelSerializer):
                     print(e)
         except:
             return serializers.ValidationError("Bad Request")
+
+class CampaignSerializer(serializers.ModelSerializer):
+    city_id = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+    position = serializers.CharField(required=True)
+    city = CitySerializer(required=False)
+    class Meta:
+        model = Campaign
+        fields = ("__all__")
+    
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def city_exists(self):
+        try:
+            City.objects.get(pk=self.validated_data["city_id"])
+            return True
+        except: return False
         
+    def create(self, validated_data):
+        try:
+            campaign = Campaign.objects.create(city_id=validated_data["city_id"],
+                                                name=validated_data["name"],
+                                                position=validated_data["position"])
+            campaign.save()
+            return campaign
+        except:
+            return serializers.ValidationError("Bad Request")
+
+class CampaignUpdateSerializer(serializers.ModelSerializer):
+    city_id = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+    position = serializers.CharField(required=False)
+    is_match_cv = serializers.BooleanField(required=False)
+    status = serializers.BooleanField(required=False)
+    city = CitySerializer(required=False)
+    class Meta:
+        model = Campaign
+        fields = ("__all__")
+        
+    # Get current user login
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def tag_new(self):
+        tags = self.validated_data.pop('tag', None)
+        if (tags):
+            for tag in tags:
+                try:
+                    Tag.objects.get(name=tag["name"])
+                except:
+                    Tag.objects.create(name=tag["name"])
+        return True
+
+    def city_exists(self):
+        try:
+            if self.validated_data["city_id"]:
+                try:
+                    City.objects.get(pk=self.validated_data["city_id"])
+                    return True
+                except: return False
+        except: return True
+    
+    def update(self, instance, validated_data):
+        # instance.model_method() # call model method for instance level computation
+        # # call super to now save modified instance along with the validated data
+        # return super().update(instance, validated_data)  
+        fields = ['city_id', 'name', 'position', 'is_match_cv', 'status',]
+        for field in fields:
+            try:
+                setattr(instance, field, validated_data[field])
+            except KeyError:  # validated_data may not contain all fields during HTTP PATCH
+                pass
+        instance.save()
+        return instance
+
 class TagSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=True)
     class Meta:

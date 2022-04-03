@@ -35,3 +35,8 @@ class CityAdmin(admin.ModelAdmin):
     model = City
     list_display = ['name']
 admin.site.register(City, CityAdmin)
+
+class CampaignAdmin(admin.ModelAdmin):
+    model = Campaign
+    list_display = ['name', 'is_match_cv', 'status']
+admin.site.register(Campaign, CampaignAdmin)

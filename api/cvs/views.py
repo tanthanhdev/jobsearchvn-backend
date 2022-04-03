@@ -14,13 +14,13 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
-from .serializers import CvSerializer, CvUpdateSerializer, Cv_TemplateSerializer, Cv_CareerSerializer, Cv_DesignSerializer
+from .serializers import CvSerializer, CvUpdateSerializer, Cv_TemplateSerializer, Cv_CareerSerializer, Cv_DesignSerializer, SaveCvSerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from api.users.permissions import IsTokenValid
+from api.users.permissions import IsTokenValid, IsEmployer
 from operator import or_, and_
 from django.core import serializers
 
@@ -67,8 +67,6 @@ class CvViewSet(viewsets.ModelViewSet):
                 messages['cv_career'] = "CV career not exists"
             if messages:
                 return Response(messages, status=status.HTTP_204_NO_CONTENT)
-            print('vao roi ma?????????????????????????????????????????')
-            print(request.data)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)              
@@ -109,6 +107,61 @@ class CvViewSet(viewsets.ModelViewSet):
                 queryset = Cv.objects.get(Q(slug=slug), Q(user=request.user), Q(user__is_active=True))
                 queryset.delete()
                 return Response({'message': 'Delete cv successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+class CvSaveViewSet(viewsets.ModelViewSet):
+    queryset = SaveCv.objects.all()
+    default_serializer_classes = SaveCvSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            serializer = SaveCvSerializer(self.queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    def retrieve(self, request, id=None):
+        try:
+            queryset = SaveCv.objects.get(pk=id)
+            serializer = SaveCvSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, *args, **kwargs):
+        serializer = SaveCvSerializer(data=request.data, context={
+            'request': request
+        })
+        messages = {}
+        if serializer.is_valid():
+            if serializer.SaveCv_exists():
+                messages['message'] = "Save Cv has exists"
+            if messages:
+                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)              
+
+    def destroy(self, request, id=None, format=None):
+        try:
+            if not id:
+                queryset = self.queryset
+                if not queryset:
+                    return Response({'message': 'SaveCv Not Found'}, status=status.HTTP_404_NOT_FOUND)
+                queryset.delete()
+                return Response({'message': 'Delete all save cv successfully'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                queryset = SaveCv.objects.get(pk=id)
+                queryset.delete()
+                return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 

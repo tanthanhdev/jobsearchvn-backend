@@ -15,7 +15,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
 from api.jobs.models import Job
-from api.jobs.serializers import JobSerializer, JobUpdateSerializer
+from api.cvs.models import Cv
+from api.jobs.serializers import JobSerializer
+from api.cvs.serializers import CvSerializer
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 import json
@@ -62,4 +64,34 @@ class SearchJobViewSet(viewsets.ModelViewSet):
             serializer = JobSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = JobSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SearchCvViewSet(viewsets.ModelViewSet):
+    queryset = Cv.objects.filter(status=1)
+    default_serializer_classes = CvSerializer
+    permission_classes = []
+    pagination_class = CustomPagination
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset
+        query_string = request.GET.get('q')
+        # filter here
+        if query_string:
+            query_string = query_string.strip()
+            queryset = queryset.filter(Q(title__icontains=query_string)
+                                          | Q(target_major__icontains=query_string))
+        if queryset.count() == 0:
+            return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
+        # pagination here
+        # The ViewSet class inherits from APIView. The relation is: View(in Django) -> APIView -> ViewSet
+        # The ModelViewSetclass inherits from GenericViewSet . The relation is: View(in Django) -> APIView -> GenericAPIView -> GenericViewSet -> ModelViewSet
+        # pagination_class is add in GenericAPIView, so you can't use it in a class inherits from APIView.You can try viewsets.GenericViewSet.
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = CvSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = CvSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

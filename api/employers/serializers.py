@@ -67,25 +67,18 @@ class MyMessage(APIException):
         self.message = msg
 
 class EmployerUpdateSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=True)
-    about = serializers.CharField(required=False)
-    preparation_time = serializers.CharField(required=True)
-    cooking_time = serializers.CharField(required=True)
-    ingredient = serializers.CharField(required=True)
-    image = serializers.ImageField(required=False)
-    method = serializers.CharField(required=True)
-    comment = serializers.CharField(required=False)
-    category_id = serializers.CharField(required=False)
-    occasion_id = serializers.CharField(required=False)
-    tag_id = serializers.CharField(required=False)
+    user = UserSerializer(required=False)
+    company_name = serializers.CharField(required=False)
+    company_location = serializers.CharField(required=False)
+    company_size = serializers.CharField(required=False)
+    logo = serializers.ImageField(required=False)
+    description = serializers.CharField(required=False)
     web_link = serializers.CharField(required=False)
-    link = serializers.CharField(required=False)
+    status = serializers.BooleanField(required=False)
+    package_type = serializers.CharField(required=False)
     class Meta:
         model = Employer
-        fields = ('id', 'user' ,'title', 'slug', 'about', 'preparation_time', 'cooking_time', 'ingredient', 'image',
-                  'method', 'comment', 'web_link', 'link',
-                  'category_id', 'employer_category_name', 'occasion_id', 'employer_occasion_name', 
-                  'tag_id',  'employer_tag_name')
+        fields = "__all__"
         
     # Get current user login
     def _current_user(self):
@@ -93,21 +86,19 @@ class EmployerUpdateSerializer(serializers.ModelSerializer):
         if request:
             return request.user
         return False
-
-    def _employer_user(self):
-        try:
-            current_user = self._current_user()
-            employer = Employer.objects.get(Q(title__iexact=self.validated_data['title']), Q(user=current_user))
-            return employer
-        except:
-            return None
-
-    def employer_exists(self, slug):
-        employer = self._employer_user()
-        if employer:
-            if employer.slug != slug:
-                return False
-        return True  
+    
+    def update(self, instance, validated_data):
+        # instance.model_method() # call model method for instance level computation
+        # # call super to now save modified instance along with the validated data
+        # return super().update(instance, validated_data)  
+        fields = ['company_name', 'company_location', 'company_size', 'logo', 'description', 'web_link', 'package_type']
+        for field in fields:
+            try:
+                setattr(instance, field, validated_data[field])
+            except KeyError:  # validated_data may not contain all fields during HTTP PATCH
+                pass
+        instance.save()
+        return instance
 
 class EmployerSerializer(serializers.ModelSerializer):
     user = UserSerializer()

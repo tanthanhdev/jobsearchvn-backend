@@ -15,9 +15,9 @@ from api.users.models import User
 
 # Create your models here.
 PACKAGE_CHOICES =(
-  ("Free", "free"),
-  ("Basic", "basic"),
-  ("Advance", "advance"),
+  ("Free", "Free"),
+  ("Basic", "Basic"),
+  ("Advance", "Advance"),
 )
 
 def unique_slugify(instance, slug):

@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 # Models
 from api.members.models import Member
+from api.employers.models import Employer
 
 # Create your models here.
 def unique_slugify(instance, slug):
@@ -108,6 +109,16 @@ class Cv(models.Model):
             self.slug = unique_slugify(self, slugify(self.title))
         # ========================
         super(Cv, self).save(*args, **kwargs)
+
+
+class SaveCv(models.Model):
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_save_cvs")
+    cv = models.ForeignKey(Cv, on_delete=models.CASCADE, related_name="cv_save_cvs")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'save_cvs'
 
 # Table cv_educations
 class CvEducation(models.Model):

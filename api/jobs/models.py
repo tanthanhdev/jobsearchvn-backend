@@ -119,6 +119,7 @@ class Job(models.Model):
     job_type = models.ForeignKey(JobType, on_delete=models.CASCADE, related_name="job_type_job")
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="country_job")
     tag = models.ManyToManyField(Tag, db_table='jobs_tags', related_name="jobs_tags")
+    campaign = models.ForeignKey('jobs.Campaign', on_delete=models.CASCADE, related_name="campaign_jobs", null=True, blank=True)
     #
     title = models.CharField(max_length=255, null=True, blank=True)
     slug = models.CharField(max_length=255, null=True, blank=True)
@@ -181,3 +182,22 @@ class Benefit(models.Model):
     
     def __str__(self):
         return self.benefit
+    
+# Campaigns
+class Campaign(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="city_campaigns")
+    name = models.CharField(max_length=255)
+    slug = models.CharField(max_length=255, null=True, blank=True)
+    position = models.CharField(max_length=255)
+    is_match_cv = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'campaigns'
+        
+    def save(self, *args, **kwargs):
+        # slug save
+        if not self.slug:
+            self.slug = unique_slugify(self, slugify(self.name))
+        # ========================
+        super(Campaign, self).save(*args, **kwargs)

@@ -15,8 +15,12 @@ from rest_framework_simplejwt.views import (
 search_job_list = SearchJobViewSet.as_view({
     'get': 'list', # Get lists
 })
+search_cv_list = SearchCvViewSet.as_view({
+    'get': 'list', # Get lists
+})
 
 urlpatterns = [
     # dashboard
     path('searches/job/', search_job_list),
+    path('searches/cv/', search_cv_list),
 ]

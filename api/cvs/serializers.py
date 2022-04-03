@@ -20,6 +20,7 @@ from django.contrib.auth.models import Group
 from .models import *
 # serializers
 from api.members.serializers import MemberCustomPublicSerializer
+from api.employers.serializers import EmployerRetriveSerializer
 # regex
 import re
 # rest fw jwt settings
@@ -312,6 +313,47 @@ class CvSerializer(serializers.ModelSerializer):
                 return cv
         except:
             return serializers.ValidationError("Bad Request")
+
+        
+class CvRetriveSerializer(serializers.ModelSerializer):
+    pk = serializers.CharField(required=False)
+    class Meta:
+        model = Cv
+        fields = "__all__"
+
+class SaveCvSerializer(serializers.ModelSerializer):
+    cv_id = serializers.CharField(required=True)
+    employer = EmployerRetriveSerializer(required=False)
+    cv = CvRetriveSerializer(required=False)
+    class Meta:
+        model = SaveCv
+        fields = ("__all__")
+        
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def SaveCv_exists(self):
+        try:
+            SaveCv.objects.get(Q(cv_id=self.validated_data['cv_id'])
+                                      , Q(employer=self._current_user().employer))
+            return True
+        except:
+            return False
+  
+    def create(self, validated_data):
+        try:
+            current_user = self._current_user()
+            follow = SaveCv.objects.create(cv_id=validated_data['cv_id'],
+                                            employer=current_user.employer)
+            follow.save()
+            return follow
+        except:
+            return serializers.ValidationError("Bad Request")
+        return serializers.ValidationError("Server Error")
+
 
 class Cv_TemplateSerializer(serializers.ModelSerializer):
     class Meta:

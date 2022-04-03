@@ -29,7 +29,7 @@ public_job_detail = PublicEmployerViewSet.as_view({
 
 urlpatterns = [
     # dashboard
-    path('employers/<int:id>/', employer_detail, name='employer_detail'),
+    path('employers/', employer_detail, name='employer_detail'),
     # Unauthenticated
     path('public/employers/', public_job_list, name='public_job_list'),
     path('public/employers/<slug:slug>/', public_job_detail, name='public_job_detail'),

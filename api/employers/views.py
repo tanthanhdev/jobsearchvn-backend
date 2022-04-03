@@ -20,7 +20,7 @@ from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from api.users.permissions import IsTokenValid
+from api.users.permissions import IsTokenValid, IsEmployer
 from operator import or_, and_
 # custom
 from api.users.custom_pagination import CustomPagination
@@ -30,7 +30,7 @@ from api.users import status_http
 class EmployerViewSet(viewsets.ModelViewSet):
     queryset = Employer.objects.all()
     default_serializer_classes = EmployerSerializer
-    permission_classes = [IsAuthenticated, IsTokenValid]
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
     # permission_classes = []
     pagination_class = None
     parser_classes = [MultiPartParser, FormParser]
@@ -38,24 +38,24 @@ class EmployerViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
     
-    def retrieve(self, request, id=None):
+    def retrieve(self, request):
         try:
-            queryset = Employer.objects.get(pk=id, user=request.user)
+            queryset = Employer.objects.get(user=request.user)
             serializer = EmployerSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'employer': 'Employer not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    def update(self, request, id, format=None):
-        queryset = None
+    def update(self, request, format=None):
         try:
-            queryset = Employer.objects.get(Q(pk=id), Q(user=request.user))
+            queryset = Employer.objects.get(user=request.user)
             data = request.data
             serializer = EmployerUpdateSerializer(queryset, data=data, context={
                 'request': request
             })
             if serializer.is_valid():
-                return Response(serializer.data)
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'Employer Update Not Found'}, status=status.HTTP_404_NOT_FOUND)
