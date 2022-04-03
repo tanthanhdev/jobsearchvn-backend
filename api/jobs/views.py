@@ -12,6 +12,7 @@ from rest_framework import status
 from django.db.models import Q, query
 from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import datetime    
 
 from .models import *
 from .serializers import JobSerializer, JobUpdateSerializer, TagSerializer, CountrySerializer, CitySerializer
@@ -125,7 +126,7 @@ class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Job.objects.all()
+            queryset = Job.objects.filter(Q(is_active=True), Q(end_time__gte=datetime.now())) #Greater than or equal
             if queryset:
                 serializer = JobSerializer(queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -136,7 +137,7 @@ class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, slug=None):
         try:
-            queryset = Job.objects.get(slug=slug)
+            queryset = Job.objects.get(slug=slug, is_active=True)
             serializer = JobSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:

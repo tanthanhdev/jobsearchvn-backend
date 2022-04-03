@@ -5,8 +5,10 @@ from .models import *
 # Register your models here.
 class BenefitInline(admin.TabularInline):
     model = Benefit
+    extra = 0
 class JobAddressInline(admin.TabularInline):
     model = JobAddress
+    extra = 0
     
 class JobAdmin(admin.ModelAdmin):
     model = Job
