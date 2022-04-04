@@ -177,8 +177,9 @@ class JobUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class JobSerializer(serializers.ModelSerializer):
-    job_type_id = serializers.CharField(required=False)
-    country_id = serializers.CharField(required=False)
+    job_type_id = serializers.CharField(required=True)
+    country_id = serializers.CharField(required=True)
+    campaign_id = serializers.CharField(required=True)
     tag = TagAllSerializer(required=False, many=True)
     # foreign object
     job_job_addresses = JobAddressSerializer(required=True, many=True)
@@ -215,6 +216,12 @@ class JobSerializer(serializers.ModelSerializer):
             Country.objects.get(pk=self.validated_data["country_id"])
             return True
         except: return False
+        
+    def campaign_exists(self):
+        try:
+            Campaign.objects.get(pk=self.validated_data["campaign_id"])
+            return True
+        except: return False
   
     def create(self, validated_data):
         try:
@@ -231,6 +238,7 @@ class JobSerializer(serializers.ModelSerializer):
                         job = Job.objects.create(employer=current_user.employer,
                                             job_type_id=validated_data['job_type_id'],
                                             country_id=validated_data['country_id'],
+                                            campaign_id=validated_data['campaign_id'],
                                             title=validated_data['title'],
                                             hirer_number=validated_data['hirer_number'],
                                             description=validated_data['description'],
@@ -243,9 +251,7 @@ class JobSerializer(serializers.ModelSerializer):
                                             )
                     except Exception as e:
                         print(e)
-                        print('___________________________________')
                     job.save()
-                    print(validated_data)
                     # Add foreign key inlines
                     job_job_addresses = validated_data.pop('job_job_addresses', None)
                     for job_job_address in job_job_addresses:

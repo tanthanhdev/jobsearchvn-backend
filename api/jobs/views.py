@@ -46,9 +46,9 @@ class JobViewSet(viewsets.ModelViewSet):
                 serializer = JobSerializer(queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({'job': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
         except:
-            return Response({'job': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
     
     def retrieve(self, request, slug=None):
         try:
@@ -56,7 +56,7 @@ class JobViewSet(viewsets.ModelViewSet):
             serializer = JobSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'job': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
         serializer = JobSerializer(data=request.data, context={
@@ -68,6 +68,8 @@ class JobViewSet(viewsets.ModelViewSet):
                 messages['Job type'] = "Job type not found"
             if not serializer.country_exists():
                 messages['Country'] = "Country not found"
+            if not serializer.campaign_exists():
+                messages['Campaign'] = "Campaign not found"
             if messages:
                 return Response(messages, status=status.HTTP_204_NO_CONTENT)
             serializer.save()
