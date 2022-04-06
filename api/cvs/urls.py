@@ -66,4 +66,7 @@ urlpatterns = [
     path('public/cv_careers/', cv_career_unauth_list, name='cv_career_unauth_list'),
     # cv_design
     path('public/cv_designs/', cv_design_unauth_list, name='cv_design_unauth_list'),
+    # match cv* (special)
+    # path('match-cv/', match_cv_list , name='match_cv_list'),
+    # path('match-cv/campaign/<int:id>/', match_cv_of_campaign_list , name='match_cv_of_campaign_list'),
 ]

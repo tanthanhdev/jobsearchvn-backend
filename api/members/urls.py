@@ -11,17 +11,17 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-# # # Define class
-# tag_list = TagViewSet.as_view({
-#     'get': 'list', # Get lists
-#     'post': 'create' # Create a new
+# Define class
+# member_list = MemberViewSet.as_view({
+#     # 'get': 'list', # Get lists
+#     # 'post': 'create' # Create a new
 # })
 
-# tag_detail = TagViewSet.as_view({
-#     'get': 'retrieve', # get detail
-#     # 'patch': 'update', # update
-#     # 'delete': 'destroy', # delete
-# })
+member_detail = MemberViewSet.as_view({
+    'get': 'retrieve', # get detail
+    'patch': 'update', # update
+    # 'delete': 'destroy', # delete
+})
 # follow companies
 follow_list = FollowCompanyViewSet.as_view({
     'get': 'list', # Get lists
@@ -37,9 +37,8 @@ follow_detail = FollowCompanyViewSet.as_view({
 
 urlpatterns = [
     # # dashboard
-    # path('tags', tag_list),
-    # # path('tags/delete-all', tag_detail, name='tag_delete_all'),
-    # path('tags/<slug:slug>', tag_detail, name='tag_detail'),
+    # path('members', member_list),
+    path('members/', member_detail, name='member_detail'),
     # follow companies
     path('follow/companies/', follow_list, name='follow_list'),
     path('follow/companies/<int:id>/', follow_detail, name='follow_detail'),

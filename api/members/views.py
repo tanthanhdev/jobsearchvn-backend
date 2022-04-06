@@ -14,7 +14,7 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
-from .serializers import FollowSerializer
+from .serializers import FollowSerializer, MemberSerializer, MemberUpdateSerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -26,6 +26,39 @@ from operator import or_, and_
 from api.users.custom_pagination import CustomPagination
 
 from api.users import status_http
+
+class MemberViewSet(viewsets.ModelViewSet):
+    queryset = Member.objects.all()
+    default_serializer_classes = MemberSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
+    # permission_classes = []
+    pagination_class = None
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def retrieve(self, request):
+        try:
+            queryset = Member.objects.get(user=request.user)
+            serializer = MemberSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'member': 'Member not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, format=None):
+        try:
+            queryset = Member.objects.get(user=request.user)
+            data = request.data
+            serializer = MemberUpdateSerializer(queryset, data=data, context={
+                'request': request
+            })
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': 'Member Update Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
 class FollowCompanyViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
@@ -50,7 +83,7 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, id=None):
         try:
-            queryset = Follow.objects.get(member__user=request.user, employer_id=id)
+            queryset = Follow.objects.get(member__user=request.user, member_id=id)
             serializer = FollowSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -64,8 +97,8 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             if serializer.follow_exists():
                 messages['Follow'] = "Follow has exists"
-            if not serializer.employer_exists():
-                messages['Employer'] = "Employer not found"
+            if not serializer.member_exists():
+                messages['Member'] = "Member not found"
             if messages:
                 return Response(messages, status=status.HTTP_204_NO_CONTENT)
             serializer.save()
@@ -81,7 +114,7 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
                 queryset.delete()
                 return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_204_NO_CONTENT)
             else:
-                queryset = Follow.objects.get(Q(employer_id=id), Q(member__user=request.user))
+                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
                 queryset.delete()
                 return Response({'message': 'Delete follow successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:

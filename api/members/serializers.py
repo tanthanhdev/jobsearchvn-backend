@@ -21,6 +21,9 @@ from .models import *
 # serializers
 from api.users.serializers import UserCustomPublicSerializer
 from api.employers.serializers import EmployerRetriveSerializer
+from api.users.serializers import (
+    UserSerializer, UserCustomPublicSerializer
+)
 # regex
 import re
 # rest fw jwt settings
@@ -88,7 +91,7 @@ class FollowSerializer(serializers.ModelSerializer):
         return False
  
     def employer_exists(self):
-        employer = Employer.objects.filter(pk=self.validated_data['employer_id'])
+        employer = Member.objects.filter(pk=self.validated_data['employer_id'])
         if employer:
             return True
         return False
@@ -111,3 +114,64 @@ class FollowSerializer(serializers.ModelSerializer):
         except:
             return serializers.ValidationError("Bad Request")
         return serializers.ValidationError("Server Error")
+    
+class MemberUpdateSerializer(serializers.ModelSerializer):
+    user = UserSerializer(required=False)
+    avatar = serializers.ImageField(required=False)
+    resume = serializers.CharField(required=False)
+    salary = serializers.IntegerField(required=False)
+    type = serializers.CharField(required=False)
+    currency = serializers.CharField(required=False)
+    birthday = serializers.DateField(required=False)
+    class Meta:
+        model = Member
+        fields = "__all__"
+        
+    # Get current user login
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def update(self, instance, validated_data):
+        # instance.model_method() # call model method for instance level computation
+        # # call super to now save modified instance along with the validated data
+        # return super().update(instance, validated_data)  
+        fields = ['avatar', 'resume', 'salary', 'type', 'currency', 'birthday',]
+        for field in fields:
+            try:
+                setattr(instance, field, validated_data[field])
+            except KeyError:  # validated_data may not contain all fields during HTTP PATCH
+                pass
+        instance.save()
+        return instance
+
+class MemberSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    
+    class Meta:
+        model = Member
+        depth = 1
+        fields = "__all__"
+    
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+ 
+    def member_exists(self):
+        current_user = self._current_user()
+        employer = Member.objects.filter(user=current_user)
+        if employer:
+            return False
+        return True  
+  
+class PublicMemberSerializer(serializers.ModelSerializer):
+    pk = serializers.CharField(required=False)
+    user = UserCustomPublicSerializer()
+    class Meta:
+        model = Member
+        fields = "__all__"
+        
