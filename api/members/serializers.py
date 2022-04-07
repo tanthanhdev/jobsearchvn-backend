@@ -21,6 +21,7 @@ from .models import *
 # serializers
 from api.users.serializers import UserCustomPublicSerializer
 from api.employers.serializers import EmployerRetriveSerializer
+from api.jobs.serializers import JobRetriveSerializer
 from api.users.serializers import (
     UserSerializer, UserCustomPublicSerializer
 )
@@ -114,7 +115,46 @@ class FollowSerializer(serializers.ModelSerializer):
         except:
             return serializers.ValidationError("Bad Request")
         return serializers.ValidationError("Server Error")
+
+class SaveJobSerializer(serializers.ModelSerializer):
+    job_id = serializers.CharField(required=True)
+    member = MemberRetriveSerializer(required=False)
+    job = JobRetriveSerializer(required=False)
+    class Meta:
+        model = SaveJob
+        fields = ("__all__")
+        
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+ 
+    def job_exists(self):
+        job = Job.objects.filter(pk=self.validated_data['job_id'])
+        if job:
+            return True
+        return False
     
+    def save_jobs_exists(self):
+        try:
+            SaveJob.objects.get(Q(job_id=self.validated_data['job_id'])
+                                      , Q(member=self._current_user().member))
+            return True
+        except:
+            return False
+  
+    def create(self, validated_data):
+        try:
+            current_user = self._current_user()
+            saveJob = SaveJob.objects.create(job_id=validated_data['job_id'],
+                                            member=current_user.member)
+            saveJob.save()
+            return saveJob
+        except:
+            return serializers.ValidationError("Bad Request")
+        return serializers.ValidationError("Server Error")
+
 class MemberUpdateSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=False)
     avatar = serializers.ImageField(required=False)
@@ -161,13 +201,6 @@ class MemberSerializer(serializers.ModelSerializer):
             return request.user
         return False
  
-    def member_exists(self):
-        current_user = self._current_user()
-        employer = Member.objects.filter(user=current_user)
-        if employer:
-            return False
-        return True  
-  
 class PublicMemberSerializer(serializers.ModelSerializer):
     pk = serializers.CharField(required=False)
     user = UserCustomPublicSerializer()

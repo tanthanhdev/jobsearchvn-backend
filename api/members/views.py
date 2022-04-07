@@ -14,7 +14,7 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
-from .serializers import FollowSerializer, MemberSerializer, MemberUpdateSerializer
+from .serializers import FollowSerializer, MemberSerializer, MemberUpdateSerializer, SaveJobSerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -117,5 +117,65 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
                 queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
                 queryset.delete()
                 return Response({'message': 'Delete follow successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+        
+class SaveJobViewSet(viewsets.ModelViewSet):
+    queryset = SaveJob.objects.all()
+    default_serializer_classes = SaveJobSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
+    # permission_classes = []
+    pagination_class = None
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = SaveJob.objects.filter(Q(member__user=request.user))
+            if queryset:
+                serializer = SaveJobSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'save job': 'SaveJob not found'}, status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response({'save job': 'SaveJob not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    def retrieve(self, request, id=None):
+        try:
+            queryset = SaveJob.objects.get(member__user=request.user, member_id=id)
+            serializer = SaveJobSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'save job': 'SaveJob not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, *args, **kwargs):
+        serializer = SaveJobSerializer(data=request.data, context={
+            'request': request
+        })
+        messages = {}
+        if serializer.is_valid():
+            if serializer.save_jobs_exists():
+                messages['SaveJob'] = "SaveJob has exists"
+            if not serializer.job_exists():
+                messages['Job'] = "Job not found"
+            if messages:
+                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, id=None, format=None):
+        try:
+            if not id:
+                queryset = SaveJob.objects.filter(member__user=request.user)
+                if not queryset:
+                    return Response({'save job': 'SaveJob Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                queryset.delete()
+                return Response({'message': 'Delete all save job successfully'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
+                queryset.delete()
+                return Response({'message': 'Delete save job successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)

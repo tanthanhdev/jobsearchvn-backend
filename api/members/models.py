@@ -13,6 +13,7 @@ from django.dispatch import receiver
 # Models
 from api.users.models import User
 from api.employers.models import Employer
+from api.jobs.models import Job
 
 # Create your models here.
 def unique_slugify(instance, slug):
@@ -69,4 +70,13 @@ class Follow(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     class Meta:
         ordering = ('-pk',)
-        db_table = 'follows'  
+        db_table = 'follows' 
+        
+class SaveJob(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_save_jobs")
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="job_save_jobs")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'save_jobs'  

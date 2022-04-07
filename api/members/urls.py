@@ -34,6 +34,18 @@ follow_detail = FollowCompanyViewSet.as_view({
     # 'patch': 'update', # update
     'delete': 'destroy', # delete
 })
+# save jobs
+save_job_list = SaveJobViewSet.as_view({
+    'get': 'list', # Get lists
+    'post': 'create', # Create a new
+    'delete': 'destroy', # delete all
+})
+
+save_job_detail = SaveJobViewSet.as_view({
+    'get': 'retrieve', # get detail
+    # 'patch': 'update', # update
+    'delete': 'destroy', # delete
+})
 
 urlpatterns = [
     # # dashboard
@@ -42,4 +54,7 @@ urlpatterns = [
     # follow companies
     path('follow/companies/', follow_list, name='follow_list'),
     path('follow/companies/<int:id>/', follow_detail, name='follow_detail'),
+    # save jobs
+    path('save/jobs/', save_job_list, name='save_job_list'),
+    path('save/jobs/<int:id>/', save_job_detail, name='save_job_detail'),
 ]

@@ -176,6 +176,11 @@ class JobUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class JobRetriveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = ("__all__")
+
 class JobSerializer(serializers.ModelSerializer):
     job_type_id = serializers.CharField(required=True)
     country_id = serializers.CharField(required=True)
