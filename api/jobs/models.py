@@ -185,6 +185,7 @@ class Benefit(models.Model):
     
 # Campaigns
 class Campaign(models.Model):
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name="employer_campaigns")
     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="city_campaigns")
     name = models.CharField(max_length=255)
     slug = models.CharField(max_length=255, null=True, blank=True)

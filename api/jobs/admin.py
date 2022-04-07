@@ -9,7 +9,9 @@ class BenefitInline(admin.TabularInline):
 class JobAddressInline(admin.TabularInline):
     model = JobAddress
     extra = 0
-    
+class JobInline(admin.TabularInline):
+    model = Job
+    extra = 0
 class JobAdmin(admin.ModelAdmin):
     model = Job
     inlines = [BenefitInline, JobAddressInline]
@@ -39,4 +41,5 @@ admin.site.register(City, CityAdmin)
 class CampaignAdmin(admin.ModelAdmin):
     model = Campaign
     list_display = ['name', 'is_match_cv', 'status']
+    inlines = [JobInline,]
 admin.site.register(Campaign, CampaignAdmin)

@@ -13,7 +13,11 @@ from django.db.models import Q, query
 from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from api.employers.models import employer_upload_file
+
 from .models import *
+from api.jobs.models import Campaign, Job
+from api.jobs.serializers import JobSerializer
 from .serializers import CvSerializer, CvUpdateSerializer, Cv_TemplateSerializer, Cv_CareerSerializer, Cv_DesignSerializer, SaveCvSerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
@@ -25,6 +29,7 @@ from operator import or_, and_
 from django.core import serializers
 
 from api.users import status_http
+import operator
 
 class CvViewSet(viewsets.ModelViewSet):
     queryset = Cv.objects.all()
@@ -123,7 +128,7 @@ class CvSaveViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            serializer = SaveCvSerializer(self.queryset, many=True)
+            serializer = SaveCvSerializer(SaveCv.objects.all(), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -159,8 +164,7 @@ class CvSaveViewSet(viewsets.ModelViewSet):
                 queryset.delete()
                 return Response({'message': 'Delete all save cv successfully'}, status=status.HTTP_204_NO_CONTENT)
             else:
-                queryset = SaveCv.objects.get(pk=id)
-                queryset.delete()
+                SaveCv.objects.get(pk=id).delete()
                 return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
@@ -276,3 +280,182 @@ class Cv_DesignUnauthenticatedViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'cv_design': 'Cv_Design not found'}, status=status.HTTP_204_NO_CONTENT)
+
+class MatchCVViewSet(viewsets.ModelViewSet):
+    queryset = Cv.objects.all()
+    default_serializer_classes = CvSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.queryset
+            queryCampaigns = Campaign.objects.filter(employer=request.user.employer, is_match_cv=True, status=True)
+            campaignNameList = []
+            campaignPositionList = []
+            jobTitleList = []
+            jobDescriptionList = []
+            jobRequirementList = []
+            jobBenefitList = []
+            for campaign in queryCampaigns:
+                campaignNameList.append(campaign.name)
+                campaignPositionList.append(campaign.position)
+                jobs = campaign.campaign_jobs.all()
+                for job in jobs:
+                    jobTitleList.append(job.title)
+                    jobDescriptionList.append(job.description)
+                    jobRequirementList.append(job.job_requirement)
+                    benefits = job.job_benefits.all()
+                    for benefit in benefits:
+                        jobBenefitList.append(benefit.benefit)
+            # campaign search
+            filterTitle_campaignName = reduce(operator.or_, (Q(title__icontains = item) for item in campaignNameList))
+            filterTitle_campaignPosition = reduce(operator.or_, (Q(title__icontains = item) for item in campaignPositionList))
+            filterTarget_campaignName = reduce(operator.or_, (Q(target_major__icontains = item) for item in campaignNameList))
+            filterTarget_campaignPosition = reduce(operator.or_, (Q(target_major__icontains = item) for item in campaignPositionList))
+            filterCvEducations_campaignName = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in campaignNameList))
+            filterCvEducations_campaignPosition = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in campaignPositionList))
+            filterCvExperiences_campaignName = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in campaignNameList))
+            filterCvExperiences_campaignPosition = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in campaignPositionList))
+            filterCvSkills_campaignName = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in campaignNameList))
+            filterCvSkills_campaignPosition = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in campaignPositionList))
+            filterSocialActivities_campaignName = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in campaignNameList))
+            filterSocialActivities_campaignPosition = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in campaignPositionList))
+            # searching jobs of campaign
+            filterTitle_jobTitle = reduce(operator.or_, (Q(title__icontains = item) for item in jobTitleList))
+            filterTitle_jobDescription = reduce(operator.or_, (Q(title__icontains = item) for item in jobDescriptionList))
+            filterTitle_jobRequirement = reduce(operator.or_, (Q(title__icontains = item) for item in jobRequirementList))
+            filterTarget_jobTitle = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobTitleList))
+            filterTarget_jobDescription = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobDescriptionList))
+            filterTarget_jobRequirement = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobRequirementList))
+            filterTarget_jobBenefit = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobBenefitList))
+            filterCvEducations_jobTitle = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in jobTitleList))
+            filterCvEducations_jobDescription = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in jobDescriptionList))
+            filterCvEducations_jobRequirement = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in jobRequirementList))
+            filterCvExperiences_jobTitle = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in jobTitleList))
+            filterCvExperiences_jobDescription = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in jobDescriptionList))
+            filterCvExperiences_jobRequirement = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in jobRequirementList))
+            filterCvSkills_jobTitle = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in jobTitleList))
+            filterCvSkills_jobDescription = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in jobDescriptionList))
+            filterCvSkills_jobRequirement = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in jobRequirementList))
+            filterSocialActivities_jobTitle = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobTitleList))
+            filterSocialActivities_jobDescription = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobDescriptionList))
+            filterSocialActivities_jobRequirement = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobRequirementList))
+            # final
+            queryset = queryset.filter(Q(filterTitle_campaignName) | Q(filterTarget_campaignName)
+                                       | Q(filterTitle_campaignPosition) | Q(filterTarget_campaignPosition)
+                                       | Q(filterCvEducations_campaignName) | Q(filterCvEducations_campaignPosition)
+                                       | Q(filterCvExperiences_campaignName) | Q(filterCvExperiences_campaignPosition)
+                                       | Q(filterCvSkills_campaignName) | Q(filterCvSkills_campaignPosition)
+                                       | Q(filterSocialActivities_campaignName) | Q(filterSocialActivities_campaignPosition)
+                                       | Q(filterTitle_jobTitle) | Q(filterTitle_jobDescription)
+                                       | Q(filterTitle_jobRequirement) | Q(filterTarget_jobTitle)
+                                       | Q(filterTarget_jobDescription) | Q(filterTarget_jobRequirement)
+                                       | Q(filterTarget_jobBenefit) | Q(filterCvEducations_jobTitle)
+                                       | Q(filterCvEducations_jobDescription) | Q(filterCvEducations_jobRequirement)
+                                       | Q(filterCvExperiences_jobTitle) | Q(filterCvExperiences_jobTitle)
+                                       | Q(filterCvExperiences_jobDescription) | Q(filterCvExperiences_jobRequirement)
+                                       | Q(filterCvSkills_jobTitle) | Q(filterCvSkills_jobDescription)
+                                       | Q(filterCvSkills_jobRequirement) | Q(filterSocialActivities_jobTitle)
+                                       | Q(filterSocialActivities_jobDescription) | Q(filterSocialActivities_jobRequirement)).distinct()
+            if queryset.count() == 0:
+                return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
+            serializer = Cv_TemplateSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class MatchCVCampaignViewSet(viewsets.ModelViewSet):
+    queryset = Cv.objects.filter(status=1)
+    default_serializer_classes = CvSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, id=None, *args, **kwargs):
+        try:
+            if id:
+                queryset = self.queryset
+                campaign = Campaign.objects.get(employer=request.user.employer, is_match_cv=True, status=True, pk=id)
+                campaignNameList = []
+                campaignPositionList = []
+                jobTitleList = []
+                jobDescriptionList = []
+                jobRequirementList = []
+                jobBenefitList = []
+                campaignNameList.append(campaign.name)
+                campaignPositionList.append(campaign.position)
+                jobs = campaign.campaign_jobs.all()
+                for job in jobs:
+                    jobTitleList.append(job.title)
+                    jobDescriptionList.append(job.description)
+                    jobRequirementList.append(job.job_requirement)
+                    benefits = job.job_benefits.all()
+                    for benefit in benefits:
+                        jobBenefitList.append(benefit.benefit)
+                # campaign search
+                filterTitle_campaignName = reduce(operator.or_, (Q(title__icontains = item) for item in campaignNameList))
+                filterTitle_campaignPosition = reduce(operator.or_, (Q(title__icontains = item) for item in campaignPositionList))
+                filterTarget_campaignName = reduce(operator.or_, (Q(target_major__icontains = item) for item in campaignNameList))
+                filterTarget_campaignPosition = reduce(operator.or_, (Q(target_major__icontains = item) for item in campaignPositionList))
+                filterCvEducations_campaignName = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in campaignNameList))
+                filterCvEducations_campaignPosition = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in campaignPositionList))
+                filterCvExperiences_campaignName = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in campaignNameList))
+                filterCvExperiences_campaignPosition = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in campaignPositionList))
+                filterCvSkills_campaignName = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in campaignNameList))
+                filterCvSkills_campaignPosition = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in campaignPositionList))
+                filterSocialActivities_campaignName = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in campaignNameList))
+                filterSocialActivities_campaignPosition = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in campaignPositionList))
+                # searching jobs of campaign
+                filterTitle_jobTitle = reduce(operator.or_, (Q(title__icontains = item) for item in jobTitleList))
+                filterTitle_jobDescription = reduce(operator.or_, (Q(title__icontains = item) for item in jobDescriptionList))
+                filterTitle_jobRequirement = reduce(operator.or_, (Q(title__icontains = item) for item in jobRequirementList))
+                filterTarget_jobTitle = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobTitleList))
+                filterTarget_jobDescription = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobDescriptionList))
+                filterTarget_jobRequirement = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobRequirementList))
+                filterTarget_jobBenefit = reduce(operator.or_, (Q(target_major__icontains = item) for item in jobBenefitList))
+                filterCvEducations_jobTitle = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in jobTitleList))
+                filterCvEducations_jobDescription = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in jobDescriptionList))
+                filterCvEducations_jobRequirement = reduce(operator.or_, (Q(cv_cv_educations__major__icontains = item) for item in jobRequirementList))
+                filterCvExperiences_jobTitle = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in jobTitleList))
+                filterCvExperiences_jobDescription = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in jobDescriptionList))
+                filterCvExperiences_jobRequirement = reduce(operator.or_, (Q(cv_cv_experiences__job_title__icontains = item) for item in jobRequirementList))
+                filterCvSkills_jobTitle = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in jobTitleList))
+                filterCvSkills_jobDescription = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in jobDescriptionList))
+                filterCvSkills_jobRequirement = reduce(operator.or_, (Q(cv_cv_skills__name__icontains = item) for item in jobRequirementList))
+                filterSocialActivities_jobTitle = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobTitleList))
+                filterSocialActivities_jobDescription = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobDescriptionList))
+                filterSocialActivities_jobRequirement = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobRequirementList))
+                # final
+                queryset = queryset.filter(Q(filterTitle_campaignName) | Q(filterTarget_campaignName)
+                                        | Q(filterTitle_campaignPosition) | Q(filterTarget_campaignPosition)
+                                        | Q(filterCvEducations_campaignName) | Q(filterCvEducations_campaignPosition)
+                                        | Q(filterCvExperiences_campaignName) | Q(filterCvExperiences_campaignPosition)
+                                        | Q(filterCvSkills_campaignName) | Q(filterCvSkills_campaignPosition)
+                                        | Q(filterSocialActivities_campaignName) | Q(filterSocialActivities_campaignPosition)
+                                        | Q(filterTitle_jobTitle) | Q(filterTitle_jobDescription)
+                                        | Q(filterTitle_jobRequirement) | Q(filterTarget_jobTitle)
+                                        | Q(filterTarget_jobDescription) | Q(filterTarget_jobRequirement)
+                                        | Q(filterTarget_jobBenefit) | Q(filterCvEducations_jobTitle)
+                                        | Q(filterCvEducations_jobDescription) | Q(filterCvEducations_jobRequirement)
+                                        | Q(filterCvExperiences_jobTitle) | Q(filterCvExperiences_jobTitle)
+                                        | Q(filterCvExperiences_jobDescription) | Q(filterCvExperiences_jobRequirement)
+                                        | Q(filterCvSkills_jobTitle) | Q(filterCvSkills_jobDescription)
+                                        | Q(filterCvSkills_jobRequirement) | Q(filterSocialActivities_jobTitle)
+                                        | Q(filterSocialActivities_jobDescription) | Q(filterSocialActivities_jobRequirement)).distinct()
+                if queryset.count() == 0:
+                    return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
+                serializer = Cv_TemplateSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
+        

@@ -80,3 +80,100 @@ class SaveJob(models.Model):
     class Meta:
         ordering = ('-pk',)
         db_table = 'save_jobs'  
+        
+# Table educations
+class Education(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_educations")
+    #
+    degree_name = models.CharField(max_length=255)
+    major = models.CharField(max_length=255)
+    university_name = models.CharField(max_length=255)
+    gpa = models.FloatField()
+    starting_date = models.DateField(null=True, blank=True)
+    completion_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'educations'
+    
+    def __str__(self):
+        return self.degree_name
+    
+# Table experiences
+class Experience(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_experiences")
+    #
+    job_title = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255)
+    job_location = models.CharField(max_length=255, null=True, blank=True)
+    job_state = models.BooleanField()
+    job_country = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'experiences'
+    
+    def __str__(self):
+        return self.job_title
+    
+        
+# Table skills
+class Skill(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_skills")
+    #
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    #
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'skills'
+    
+    def __str__(self):
+        return self.name
+
+# Table social_activities
+class SocialActivity(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_social_activities")
+    #
+    title = models.CharField(max_length=255)
+    unit_name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    starting_date = models.DateField(null=True, blank=True)
+    completion_date = models.DateField(null=True, blank=True)
+    #
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'social_activities'
+    
+    def __str__(self):
+        return self.title
+    
+# Table certificates
+class Certificate(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_certificates")
+    #
+    name = models.CharField(max_length=255, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+    #
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'certificates'
+    
+    def __str__(self):
+        return self.name

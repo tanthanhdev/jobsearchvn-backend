@@ -52,7 +52,13 @@ cv_save_list = CvSaveViewSet.as_view({
     'post': 'create', # Create a new
     'delete': 'destroy', # delete all
 })
-
+# match cv
+match_cv_list = MatchCVViewSet.as_view({
+    'get': 'list', # Get lists
+})
+match_cv_of_campaign_list = MatchCVCampaignViewSet.as_view({
+    'get': 'list', # Get lists
+})
 
 urlpatterns = [
     path('cvs/save/<int:id>/', cv_save_detail, name='cv_save_detail'),
@@ -67,6 +73,6 @@ urlpatterns = [
     # cv_design
     path('public/cv_designs/', cv_design_unauth_list, name='cv_design_unauth_list'),
     # match cv* (special)
-    # path('match-cv/', match_cv_list , name='match_cv_list'),
-    # path('match-cv/campaign/<int:id>/', match_cv_of_campaign_list , name='match_cv_of_campaign_list'),
+    path('match-cv/', match_cv_list , name='match_cv_list'),
+    path('match-cv/campaign/<int:id>/', match_cv_of_campaign_list , name='match_cv_of_campaign_list'),
 ]

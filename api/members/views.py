@@ -33,7 +33,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
     # permission_classes = []
     pagination_class = None
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
@@ -55,7 +55,7 @@ class MemberViewSet(viewsets.ModelViewSet):
             })
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({'message': 'Member update successfully!'}, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'Member Update Not Found'}, status=status.HTTP_404_NOT_FOUND)

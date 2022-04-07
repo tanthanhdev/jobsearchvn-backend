@@ -77,6 +77,59 @@ class MemberRetriveSerializer(serializers.ModelSerializer):
         model = Member
         fields = ("__all__")
 
+class MemberPkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ("pk")
+        
+# foreign
+class EducationCustomSerializer(serializers.ModelSerializer):
+    member = MemberPkSerializer(required=False)
+    class Meta:
+        model = Education
+        fields = ('__all__')
+class ExperienceCustomSerializer(serializers.ModelSerializer):
+    member = MemberPkSerializer(required=False)
+    class Meta:
+        model = Experience
+        fields = ('__all__')
+class SkillCustomSerializer(serializers.ModelSerializer):
+    member = MemberPkSerializer(required=False)
+    class Meta:
+        model = Skill
+        fields = ('__all__')
+class SocialActivityCustomSerializer(serializers.ModelSerializer):
+    member = MemberPkSerializer(required=False)
+    class Meta:
+        model = SocialActivity
+        fields = ('__all__')
+class CertificateCustomSerializer(serializers.ModelSerializer):
+    member = MemberPkSerializer(required=False)
+    class Meta:
+        model = Certificate
+        fields = ('__all__')
+
+class EducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Education
+        fields = ('__all__')
+class ExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Experience
+        fields = ('__all__')
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ('__all__')
+class SocialActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SocialActivity
+        fields = ('__all__')
+class CertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certificate
+        fields = ('__all__')
+
 class FollowSerializer(serializers.ModelSerializer):
     employer_id = serializers.CharField(required=True)
     member = MemberRetriveSerializer(required=False)
@@ -163,6 +216,12 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
     type = serializers.CharField(required=False)
     currency = serializers.CharField(required=False)
     birthday = serializers.DateField(required=False)
+    #
+    member_educations = EducationCustomSerializer(required=False, many=True)
+    member_experiences = ExperienceCustomSerializer(required=False, many=True)
+    member_skills = SkillCustomSerializer(required=False, many=True)
+    member_social_activities = SocialActivityCustomSerializer(required=False, many=True)
+    member_certificates = CertificateCustomSerializer(required=False, many=True)
     class Meta:
         model = Member
         fields = "__all__"
@@ -178,6 +237,41 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
         # instance.model_method() # call model method for instance level computation
         # # call super to now save modified instance along with the validated data
         # return super().update(instance, validated_data)  
+        instance.member_educations.all().delete()
+        instance.member_experiences.all().delete()
+        instance.member_skills.all().delete()
+        instance.member_social_activities.all().delete()
+        instance.member_certificates.all().delete()
+        member_educations = validated_data.get('member_educations', [])
+        aList = []
+        for val in member_educations:
+            val['member'] = self._current_user().member
+            aList.append(Education(**val))
+        Education.objects.bulk_create(aList)
+        member_experiences = validated_data.get('member_experiences', [])
+        aList = []
+        for val in member_experiences:
+            val['member'] = self._current_user().member
+            aList.append(Experience(**val))
+        Experience.objects.bulk_create(aList)
+        member_skills = validated_data.get('member_skills', [])
+        aList = []
+        for val in member_skills:
+            val['member'] = self._current_user().member
+            aList.append(Skill(**val))
+        Skill.objects.bulk_create(aList)
+        member_social_activities = validated_data.get('member_social_activities', [])
+        aList = []
+        for val in member_social_activities:
+            val['member'] = self._current_user().member
+            aList.append(SocialActivity(**val))
+        SocialActivity.objects.bulk_create(aList)
+        member_certificates = validated_data.get('member_certificates', [])
+        aList = []
+        for val in member_certificates:
+            val['member'] = self._current_user().member
+            aList.append(Certificate(**val))
+        Certificate.objects.bulk_create(aList)
         fields = ['avatar', 'resume', 'salary', 'type', 'currency', 'birthday',]
         for field in fields:
             try:
@@ -189,17 +283,18 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
 
 class MemberSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+    #
+    member_educations = EducationSerializer(required=False, many=True)
+    member_experiences = ExperienceSerializer(required=False, many=True)
+    member_skills = SkillSerializer(required=False, many=True)
+    member_social_activities = SocialActivitySerializer(required=False, many=True)
+    member_certificates = CertificateSerializer(required=False, many=True)
     
     class Meta:
         model = Member
         depth = 1
         fields = "__all__"
     
-    def _current_user(self):
-        request = self.context.get('request', None)
-        if request:
-            return request.user
-        return False
  
 class PublicMemberSerializer(serializers.ModelSerializer):
     pk = serializers.CharField(required=False)
@@ -207,4 +302,3 @@ class PublicMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = "__all__"
-        

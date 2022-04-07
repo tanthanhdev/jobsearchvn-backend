@@ -1,4 +1,5 @@
 
+from dataclasses import field
 from django.contrib.auth.models import Group, Permission, update_last_login
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
@@ -16,6 +17,8 @@ from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth.models import Group
+
+from api.jobs.models import Campaign
 # models
 from .models import *
 # serializers

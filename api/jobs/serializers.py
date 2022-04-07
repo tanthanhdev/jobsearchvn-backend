@@ -272,11 +272,18 @@ class JobSerializer(serializers.ModelSerializer):
         except:
             return serializers.ValidationError("Bad Request")
 
+class EmployerRetriveSerializer(serializers.ModelSerializer):
+    pk = serializers.CharField(required=False)
+    class Meta:
+        model = Employer
+        fields = "__all__"
+
 class CampaignSerializer(serializers.ModelSerializer):
     city_id = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
     position = serializers.CharField(required=True)
     city = CitySerializer(required=False)
+    employer = EmployerRetriveSerializer(required=False)
     class Meta:
         model = Campaign
         fields = ("__all__")
@@ -297,7 +304,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         try:
             campaign = Campaign.objects.create(city_id=validated_data["city_id"],
                                                 name=validated_data["name"],
-                                                position=validated_data["position"])
+                                                position=validated_data["position"],
+                                                employer=self._current_user().employer)
             campaign.save()
             return campaign
         except:
@@ -310,6 +318,7 @@ class CampaignUpdateSerializer(serializers.ModelSerializer):
     is_match_cv = serializers.BooleanField(required=False)
     status = serializers.BooleanField(required=False)
     city = CitySerializer(required=False)
+    employer = EmployerRetriveSerializer(required=False)
     class Meta:
         model = Campaign
         fields = ("__all__")
