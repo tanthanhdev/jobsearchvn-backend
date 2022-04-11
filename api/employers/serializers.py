@@ -67,7 +67,7 @@ class MyMessage(APIException):
         self.message = msg
 
 class EmployerUpdateSerializer(serializers.ModelSerializer):
-    user = UserSerializer(required=False)
+    user = UserCustomPublicSerializer(required=False)
     company_name = serializers.CharField(required=False)
     company_location = serializers.CharField(required=False)
     company_size = serializers.CharField(required=False)

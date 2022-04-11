@@ -57,7 +57,8 @@ class EmployerViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
+        except Exception as e:
+            print(e)
             return Response({'message': 'Employer Update Not Found'}, status=status.HTTP_404_NOT_FOUND)
         
 # Public employer
