@@ -15,7 +15,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime    
 
 from .models import *
-from .serializers import JobSerializer, JobUpdateSerializer, TagSerializer, CountrySerializer, CitySerializer, CampaignSerializer, CampaignUpdateSerializer
+from .serializers import (
+    JobSerializer, JobUpdateSerializer, TagSerializer,
+    CountrySerializer, CitySerializer, CampaignSerializer,
+    CampaignUpdateSerializer, JobTypeSerializer,
+    SwitchActiveJobSerializer)
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,6 +29,7 @@ from api.users.permissions import IsTokenValid, IsEmployer
 from operator import or_, and_
 from django.core import serializers
 
+from api.users.custom_pagination import CustomPagination
 from api.users import status_http
 
 class JobViewSet(viewsets.ModelViewSet):
@@ -59,6 +64,7 @@ class JobViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
         serializer = JobSerializer(data=request.data, context={
             'request': request
         })
@@ -113,6 +119,33 @@ class JobViewSet(viewsets.ModelViewSet):
                 return Response({'message': 'Delete job successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+class SwitchActiveJobViewSet(viewsets.ModelViewSet):
+    queryset = Job.objects.all()
+    default_serializer_classes = SwitchActiveJobSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+
+    def update(self, request, slug, format=None):
+        queryset = None
+        try:
+            queryset = Job.objects.get(Q(slug=slug), Q(employer__user=request.user))
+            data = request.data
+            serializer = SwitchActiveJobSerializer(queryset, data=data, context={
+                'request': request
+            })
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': 'Job Update Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Campaigns
 class CampaignViewSet(viewsets.ModelViewSet):
@@ -194,6 +227,38 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 return Response({'message': 'Delete campaign successfully'}, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+class JobCampaignViewSet(viewsets.ModelViewSet):
+    queryset = Job.objects.all()
+    default_serializer_classes = JobSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = CustomPagination
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, slug=None , *args, **kwargs):
+        try:
+            queryset = Job.objects.filter(Q(campaign__slug=slug), Q(employer=request.user.employer))
+            if queryset:
+                serializer = JobSerializer(queryset, many=True)
+                # pagination here
+                # The ViewSet class inherits from APIView. The relation is: View(in Django) -> APIView -> ViewSet
+                # The ModelViewSetclass inherits from GenericViewSet . The relation is: View(in Django) -> APIView -> GenericAPIView -> GenericViewSet -> ModelViewSet
+                # pagination_class is add in GenericAPIView, so you can't use it in a class inherits from APIView.You can try viewsets.GenericViewSet.
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = JobSerializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
+                serializer = JobSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Job unauthenticated
 class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
@@ -332,5 +397,31 @@ class CityUnauthenticatedViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'city': 'City not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        
+# JobType unauthenticated
+class JobTypeUnauthenticatedViewSet(viewsets.ModelViewSet):
+    queryset = JobType.objects.all()
+    default_serializer_classes = JobTypeSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
     
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = JobType.objects.all()
+            serializer = JobTypeSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'message': 'JobType not found'}, status=status.HTTP_204_NO_CONTENT)
+    
+    def retrieve(self, request, slug=None):
+        try:
+            queryset = JobType.objects.get(slug=slug)
+            serializer = JobTypeSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'message': 'JobType not found'}, status=status.HTTP_404_NOT_FOUND)

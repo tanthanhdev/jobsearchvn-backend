@@ -30,6 +30,8 @@ from django.core import serializers
 
 from api.users import status_http
 import operator
+from api.users.custom_pagination import CustomPagination
+from datetime import datetime    
 
 class CvViewSet(viewsets.ModelViewSet):
     queryset = Cv.objects.all()
@@ -305,7 +307,7 @@ class MatchCVViewSet(viewsets.ModelViewSet):
             for campaign in queryCampaigns:
                 campaignNameList.append(campaign.name)
                 campaignPositionList.append(campaign.position)
-                jobs = campaign.campaign_jobs.all()
+                jobs = campaign.campaign_jobs.all().filter(Q(is_active=True) & Q(end_time__gte=datetime.now()))
                 for job in jobs:
                     jobTitleList.append(job.title)
                     jobDescriptionList.append(job.description)
@@ -365,7 +367,7 @@ class MatchCVViewSet(viewsets.ModelViewSet):
                                        | Q(filterSocialActivities_jobDescription) | Q(filterSocialActivities_jobRequirement)).distinct()
             if queryset.count() == 0:
                 return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
-            serializer = Cv_TemplateSerializer(queryset, many=True)
+            serializer = CvSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -375,7 +377,7 @@ class MatchCVCampaignViewSet(viewsets.ModelViewSet):
     default_serializer_classes = CvSerializer
     permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
     # permission_classes = []
-    pagination_class = None
+    pagination_class = CustomPagination
     lookup_field = 'slug'
     
     def get_serializer_class(self):
@@ -394,7 +396,7 @@ class MatchCVCampaignViewSet(viewsets.ModelViewSet):
                 jobBenefitList = []
                 campaignNameList.append(campaign.name)
                 campaignPositionList.append(campaign.position)
-                jobs = campaign.campaign_jobs.all()
+                jobs = campaign.campaign_jobs.all().filter(Q(is_active=True) & Q(end_time__gte=datetime.now()))
                 for job in jobs:
                     jobTitleList.append(job.title)
                     jobDescriptionList.append(job.description)
@@ -402,6 +404,8 @@ class MatchCVCampaignViewSet(viewsets.ModelViewSet):
                     benefits = job.job_benefits.all()
                     for benefit in benefits:
                         jobBenefitList.append(benefit.benefit)
+                print(jobTitleList)
+                print(jobDescriptionList)
                 # campaign search
                 filterTitle_campaignName = reduce(operator.or_, (Q(title__icontains = item) for item in campaignNameList))
                 filterTitle_campaignPosition = reduce(operator.or_, (Q(title__icontains = item) for item in campaignPositionList))
@@ -437,24 +441,31 @@ class MatchCVCampaignViewSet(viewsets.ModelViewSet):
                 filterSocialActivities_jobRequirement = reduce(operator.or_, (Q(cv_cv_social_activities__title__icontains = item) for item in jobRequirementList))
                 # final
                 queryset = queryset.filter(Q(filterTitle_campaignName) | Q(filterTarget_campaignName)
-                                        | Q(filterTitle_campaignPosition) | Q(filterTarget_campaignPosition)
-                                        | Q(filterCvEducations_campaignName) | Q(filterCvEducations_campaignPosition)
-                                        | Q(filterCvExperiences_campaignName) | Q(filterCvExperiences_campaignPosition)
-                                        | Q(filterCvSkills_campaignName) | Q(filterCvSkills_campaignPosition)
-                                        | Q(filterSocialActivities_campaignName) | Q(filterSocialActivities_campaignPosition)
-                                        | Q(filterTitle_jobTitle) | Q(filterTitle_jobDescription)
-                                        | Q(filterTitle_jobRequirement) | Q(filterTarget_jobTitle)
-                                        | Q(filterTarget_jobDescription) | Q(filterTarget_jobRequirement)
-                                        | Q(filterTarget_jobBenefit) | Q(filterCvEducations_jobTitle)
-                                        | Q(filterCvEducations_jobDescription) | Q(filterCvEducations_jobRequirement)
-                                        | Q(filterCvExperiences_jobTitle) | Q(filterCvExperiences_jobTitle)
-                                        | Q(filterCvExperiences_jobDescription) | Q(filterCvExperiences_jobRequirement)
-                                        | Q(filterCvSkills_jobTitle) | Q(filterCvSkills_jobDescription)
-                                        | Q(filterCvSkills_jobRequirement) | Q(filterSocialActivities_jobTitle)
-                                        | Q(filterSocialActivities_jobDescription) | Q(filterSocialActivities_jobRequirement)).distinct()
+                                       | Q(filterTitle_campaignPosition) | Q(filterTarget_campaignPosition)
+                                       | Q(filterCvEducations_campaignName) | Q(filterCvEducations_campaignPosition)
+                                       | Q(filterCvExperiences_campaignName) | Q(filterCvExperiences_campaignPosition)
+                                       | Q(filterCvSkills_campaignName) | Q(filterCvSkills_campaignPosition)
+                                       | Q(filterSocialActivities_campaignName) | Q(filterSocialActivities_campaignPosition)
+                                       | Q(filterTitle_jobTitle) | Q(filterTitle_jobDescription)
+                                       | Q(filterTitle_jobRequirement) | Q(filterTarget_jobTitle)
+                                       | Q(filterTarget_jobDescription) | Q(filterTarget_jobRequirement)
+                                       | Q(filterTarget_jobBenefit) | Q(filterCvEducations_jobTitle)
+                                       | Q(filterCvEducations_jobDescription) | Q(filterCvEducations_jobRequirement)
+                                       | Q(filterCvExperiences_jobTitle) | Q(filterCvExperiences_jobTitle)
+                                       | Q(filterCvExperiences_jobDescription) | Q(filterCvExperiences_jobRequirement)
+                                       | Q(filterCvSkills_jobTitle) | Q(filterCvSkills_jobDescription)
+                                       | Q(filterCvSkills_jobRequirement) | Q(filterSocialActivities_jobTitle)
+                                       | Q(filterSocialActivities_jobDescription) | Q(filterSocialActivities_jobRequirement)).distinct()
                 if queryset.count() == 0:
                     return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
-                serializer = Cv_TemplateSerializer(queryset, many=True)
+                # The ViewSet class inherits from APIView. The relation is: View(in Django) -> APIView -> ViewSet
+                # The ModelViewSetclass inherits from GenericViewSet . The relation is: View(in Django) -> APIView -> GenericAPIView -> GenericViewSet -> ModelViewSet
+                # pagination_class is add in GenericAPIView, so you can't use it in a class inherits from APIView.You can try viewsets.GenericViewSet.
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = CvSerializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
+                serializer = CvSerializer(queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)

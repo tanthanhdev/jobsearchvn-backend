@@ -181,6 +181,13 @@ class JobRetriveSerializer(serializers.ModelSerializer):
         model = Job
         fields = ("__all__")
 
+class SwitchActiveJobSerializer(serializers.ModelSerializer):
+    is_active = serializers.BooleanField(required=True)
+    class Meta:
+        model = Job
+        depth = 1
+        fields = ("__all__")
+        
 class JobSerializer(serializers.ModelSerializer):
     job_type_id = serializers.CharField(required=True)
     country_id = serializers.CharField(required=True)
@@ -244,17 +251,26 @@ class JobSerializer(serializers.ModelSerializer):
                                             job_type_id=validated_data['job_type_id'],
                                             country_id=validated_data['country_id'],
                                             campaign_id=validated_data['campaign_id'],
+                                            full_name=validated_data['full_name'],
+                                            phone_number=validated_data['phone_number'],
+                                            email=validated_data['email'],
+                                            level=validated_data['level'],
+                                            experience=validated_data['experience'],
                                             title=validated_data['title'],
                                             hirer_number=validated_data['hirer_number'],
                                             description=validated_data['description'],
                                             job_requirement=validated_data['job_requirement'],
+                                            salary_type=validated_data['salary_type'],
                                             salary=validated_data['salary'],
+                                            salary_from=validated_data['salary_from'],
+                                            salary_to=validated_data['salary_to'],
                                             currency=validated_data['currency'],
                                             web_link=validated_data['web_link'],
                                             start_time=validated_data['start_time'],
                                             end_time=validated_data['end_time'],
                                             )
                     except Exception as e:
+                        print('_____________________')
                         print(e)
                     job.save()
                     # Add foreign key inlines

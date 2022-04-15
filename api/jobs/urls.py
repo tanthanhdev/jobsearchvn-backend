@@ -31,7 +31,9 @@ job_unauth_list = JobUnauthenticatedViewSet.as_view({
 job_unauth_detail = JobUnauthenticatedViewSet.as_view({
     'get': 'retrieve', # get detail
 })
-
+switch_active_job_detail = SwitchActiveJobViewSet.as_view({
+    'patch': 'update', # get detail
+})
 # Tags model
 tag_unauth_list = TagUnauthenticatedViewSet.as_view({
     'get': 'list', # Get lists
@@ -72,10 +74,24 @@ campaign_list = CampaignViewSet.as_view({
     'delete': 'destroy', # delete all
 })
 
+job_campaign_detail = JobCampaignViewSet.as_view({
+    'get': 'list', # get detail
+})
+# job types
+job_types_unauth_list = JobTypeUnauthenticatedViewSet.as_view({
+    'get': 'list', # Get lists
+})
+
+job_types_unauth_detail = JobTypeUnauthenticatedViewSet.as_view({
+    'get': 'retrieve', # get detail
+})
+
+
 urlpatterns = [
     # dashboard
     path('jobs/<slug:slug>/', job_detail, name='job_detail'),
     path('jobs/', job_list, name='job_list'),
+    path('switch-active/job/<slug:slug>/', switch_active_job_detail, name='switch_active_job_detail'),
     # Unauthenticated
     path('public/jobs/<slug:slug>/', job_unauth_detail, name='job_unauth_detail'),
     path('public/jobs/', job_unauth_list, name='job_unauth_list'),
@@ -91,4 +107,8 @@ urlpatterns = [
     # Campaigns
     path('campaigns/<slug:slug>/', campaign_detail, name='campaign_detail'),
     path('campaigns/', campaign_list, name='campaign_list'),
+    path('jobs/campaign/<slug:slug>/', job_campaign_detail, name='job_campaign_detail'),
+    # Public job types
+    path('public/job-types/<slug:slug>/', job_types_unauth_detail, name='job_types_unauth_detail'),
+    path('public/job-types/', job_types_unauth_list, name='job_types_unauth_list'),
 ]

@@ -25,6 +25,38 @@ ICON_BENEFIT_CHOICES =(
   ("person", "person"),
 )
 
+LEVEL_CHOICES =(
+  ("Nhân viên", "Nhân viên"),
+  ("Quản lý", "Quản lý"),
+)
+
+EXPERIENCE_CHOICES =(
+  ("Chưa có kinh nghiệm", "Chưa có kinh nghiệm"),
+  ("1 năm kinh nghiệm", "1 năm kinh nghiệm"),
+  ("Trên 1 năm kinh nghiệm", "Trên 1 năm kinh nghiệm"),
+  ("Dưới 1 năm kinh nghiệm", "Dưới 1 năm kinh nghiệm"),
+  ("2 năm kinh nghiệm", "2 năm kinh nghiệm"),
+  ("Trên 2 năm kinh nghiệm", "Trên 2 năm kinh nghiệm"),
+  ("Dưới 2 năm kinh nghiệm", "Dưới 2 năm kinh nghiệm"),
+  ("3 năm kinh nghiệm", "3 năm kinh nghiệm"),
+  ("Trên 3 năm kinh nghiệm", "Trên 3 năm kinh nghiệm"),
+  ("Dưới 3 năm kinh nghiệm", "Dưới 3 năm kinh nghiệm"),
+  ("3 năm kinh nghiệm", "3 năm kinh nghiệm"),
+  ("Trên 3 năm kinh nghiệm", "Trên 3 năm kinh nghiệm"),
+  ("Dưới 3 năm kinh nghiệm", "Dưới 3 năm kinh nghiệm"),
+  ("4 năm kinh nghiệm", "4 năm kinh nghiệm"),
+  ("Trên 4 năm kinh nghiệm", "Trên 4 năm kinh nghiệm"),
+  ("Dưới 4 năm kinh nghiệm", "Dưới 4 năm kinh nghiệm"),
+  ("5 năm kinh nghiệm", "5 năm kinh nghiệm"),
+  ("Trên 5 năm kinh nghiệm", "Trên 5 năm kinh nghiệm"),
+  ("Dưới 5 năm kinh nghiệm", "Dưới 5 năm kinh nghiệm"),
+)
+
+SALARY_CHOICES =(
+  ("Thương lượng", "Thương lượng"),
+  ("Lương", "Lương"),
+  ("Lương khoảng", "Lương khoảng"),
+)
 
 LOCATION_CHOICES =(
   ("Tất Cả Địa Điểm", "tat ca dia diem"),
@@ -122,12 +154,20 @@ class Job(models.Model):
     campaign = models.ForeignKey('jobs.Campaign', on_delete=models.CASCADE, related_name="campaign_jobs", null=True, blank=True)
     #
     title = models.CharField(max_length=255, null=True, blank=True)
+    full_name = models.CharField(max_length=255, null=True, blank=True)
+    phone_number = models.CharField(max_length=255, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
+    level = models.CharField(max_length=255, null=True, blank=True, choices=LEVEL_CHOICES)
+    experience = models.CharField(max_length=255, null=True, blank=True, choices=EXPERIENCE_CHOICES)
     slug = models.CharField(max_length=255, null=True, blank=True)
     hirer_number = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     job_requirement = models.TextField(null=True, blank=True)
+    salary_type = models.CharField(max_length=255, null=True, blank=True, choices=SALARY_CHOICES)
     salary = models.BigIntegerField(null=True, blank=True)
-    currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES, default=CURRENCY_CHOICES[0])
+    salary_from = models.BigIntegerField(null=True, blank=True)
+    salary_to = models.BigIntegerField(null=True, blank=True)
+    currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES)
     web_link = models.CharField(max_length=255, null=True, blank=True)
     view_number = models.BigIntegerField(null=True, blank=True, default=0)
     is_active = models.BooleanField(default=False, null=True, blank=True)
@@ -195,6 +235,9 @@ class Campaign(models.Model):
     class Meta:
         ordering = ('-pk',)
         db_table = 'campaigns'
+        
+    def __str__(self):
+        return self.name
         
     def save(self, *args, **kwargs):
         # slug save
