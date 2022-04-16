@@ -59,7 +59,8 @@ class MyMessage(APIException):
         self.status_code = attrs.get('status_code')
         self.message = msg
  
-class RetriveEmployerSerializer(serializers.ModelSerializer):
+class EmployerRetriveSerializer(serializers.ModelSerializer):
+    pk = serializers.CharField(required=False)
     class Meta:
         model = Employer
         fields = "__all__"
@@ -111,16 +112,17 @@ class JobUpdateSerializer(serializers.ModelSerializer):
     employer_id = serializers.CharField(required=False, allow_blank=True)
     job_type_id = serializers.CharField(required=False, allow_blank=True)
     country_id = serializers.CharField(required=False, allow_blank=True)
-    tag = TagSerializer(required=False, many=True)
+    tag = TagAllSerializer(required=False, many=True)
+    country = CountrySerializer(required=False)
+    employer = EmployerRetriveSerializer(required=False)
+    job_type = JobTypeSerializer(required=False)
     # foreign object
-    job_job_addresses = JobAddressSerializer(required=True, many=True)
-    job_benefits = BenefitSerializer(required=True, many=True)
+    job_job_addresses = JobAddressSerializer(required=False, many=True)
+    job_benefits = BenefitSerializer(required=False, many=True)
     
     class Meta:
         model = Job
-        fields = ('employer_id', 'job_type_id', 'country_id', 'tag', 'title',
-                  'hirer_number', 'description', 'salary', 'currency', 'web_link',
-                  'view_number', 'start_time', 'end_time', 'created_at', 'updated_at', )
+        fields = ('__all__')
         
     # Get current user login
     def _current_user(self):
@@ -151,22 +153,28 @@ class JobUpdateSerializer(serializers.ModelSerializer):
             return True
         except: return False
         
-    def update_tags(self, tags):
-        tag_ids = []
-        for tag in tags:
-            obj = Tag.objects.get(pk=tag.get('id'))
-            obj.name = tag.get('name')
-            obj.save()
-            tag_ids.append(obj.pk)
-        return tag_ids
+    def tag_new(self, tags=None, instance=None):
+        if (tags):
+            tag_object = None
+            for tag in tags:
+                try:
+                    tag_object = Tag.objects.get(name=tag["name"])
+                except:
+                    tag_object = Tag.objects.create(name=tag["name"])
+                instance.tag.add(tag_object)
+
     
     def update(self, instance, validated_data):
+        # update tags
+        tags = validated_data.get('tag', [])
+        instance.tag.all().delete()
+        self.tag_new(tags, instance)
         # instance.model_method() # call model method for instance level computation
         # # call super to now save modified instance along with the validated data
         # return super().update(instance, validated_data)  
-        tag = self.initial_data.get('tag', [])
-        instance.tag.set(self.update_tags(tag))
-        fields = ['job_type_id', 'country_id', 'title', 'hirer_number', 'description', 'salary',
+        fields = ['job_type_id', 'country_id', 'campaign_id', 'title', 'hirer_number', 'description', 'salary',
+                  'level', 'experience', 'salary_type', 'salary_to', 'salary_from',
+                  'full_name', 'phone_number', 'email', 'job_requirement',
                   'currency', 'web_link', 'start_time', 'end_time']
         for field in fields:
             try:
@@ -174,6 +182,22 @@ class JobUpdateSerializer(serializers.ModelSerializer):
             except KeyError:  # validated_data may not contain all fields during HTTP PATCH
                 pass
         instance.save()
+        # Update foreign key inlines
+        instance.job_job_addresses.all().delete()
+        instance.job_benefits.all().delete()
+        job_job_addresses = validated_data.get('job_job_addresses', [])
+        aList = []
+        for val in job_job_addresses:
+            val['city'] = City.objects.get(pk=val['city_id'])
+            val['job'] = instance
+            aList.append(JobAddress(**val))
+        JobAddress.objects.bulk_create(aList)
+        job_benefits = validated_data.get('job_benefits', [])
+        aList = []
+        for val in job_benefits:
+            val['job'] = instance
+            aList.append(Benefit(**val))
+        Benefit.objects.bulk_create(aList)
         return instance
 
 class JobRetriveSerializer(serializers.ModelSerializer):
@@ -287,12 +311,6 @@ class JobSerializer(serializers.ModelSerializer):
                     print(e)
         except:
             return serializers.ValidationError("Bad Request")
-
-class EmployerRetriveSerializer(serializers.ModelSerializer):
-    pk = serializers.CharField(required=False)
-    class Meta:
-        model = Employer
-        fields = "__all__"
 
 class CampaignSerializer(serializers.ModelSerializer):
     city_id = serializers.CharField(required=True)

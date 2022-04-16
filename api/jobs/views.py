@@ -83,27 +83,26 @@ class JobViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
 
     def update(self, request, slug, format=None):
-        queryset = None
         try:
             queryset = Job.objects.get(Q(slug=slug), Q(employer__user=request.user))
-            data = request.data
-            serializer = JobUpdateSerializer(queryset, data=data, context={
-                'request': request
-            })
-            messages = {}
-            if serializer.is_valid():
-                if not serializer.job_type_exists():
-                    messages['Job type'] = "Job type not found"
-                if not serializer.country_exists():
-                    messages['Country'] = "Country not found"
-                if messages:
-                    return Response(messages, status=status.HTTP_204_NO_CONTENT)
-                serializer.tag_new()
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'Job Update Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        data = request.data
+        serializer = JobUpdateSerializer(queryset, data=data, context={
+            'request': request
+        })
+        messages = {}
+        if serializer.is_valid():
+            if not serializer.job_type_exists():
+                messages['Job type'] = "Job type not found"
+            if not serializer.country_exists():
+                messages['Country'] = "Country not found"
+            if messages:
+                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+            serializer.tag_new()
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, slug=None, format=None):
         try:
@@ -162,12 +161,16 @@ class CampaignViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Campaign.objects.all()
-            if queryset:
+            queryset = self.queryset
+            query_string = request.GET.get('q').strip()
+            if query_string:
+                if query_string:
+                    queryset = queryset.filter(Q(name__icontains=query_string) | Q(position__icontains=query_string))
+                if queryset.count() == 0:
+                    return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
                 serializer = CampaignSerializer(queryset, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+            serializer = CampaignSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
     

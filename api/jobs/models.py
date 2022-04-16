@@ -16,8 +16,8 @@ from api.employers.models import Employer
 
 # Create your models here.
 CURRENCY_CHOICES =(
-  ("VND", "vnd"),
-  ("USD", "dollar"),
+  ("VND", "VND"),
+  ("USD", "USD"),
 )
 
 ICON_BENEFIT_CHOICES =(
