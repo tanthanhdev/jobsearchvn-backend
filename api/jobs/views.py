@@ -161,14 +161,15 @@ class CampaignViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = self.queryset
-            query_string = request.GET.get('q').strip()
-            if query_string:
+            queryset = Campaign.objects.all()
+            if request.GET:
+                query_string = request.GET.get('q').strip()
                 if query_string:
-                    queryset = queryset.filter(Q(name__icontains=query_string) | Q(position__icontains=query_string))
-                if queryset.count() == 0:
-                    return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
-                serializer = CampaignSerializer(queryset, many=True)
+                    if query_string:
+                        queryset = queryset.filter(Q(name__icontains=query_string) | Q(position__icontains=query_string))
+                    if queryset.count() == 0:
+                        return Response({'message': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+                    serializer = CampaignSerializer(queryset, many=True)
             serializer = CampaignSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
