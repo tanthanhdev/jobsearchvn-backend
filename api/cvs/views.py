@@ -160,7 +160,7 @@ class CvSaveViewSet(viewsets.ModelViewSet):
     def destroy(self, request, id=None, format=None):
         try:
             if not id:
-                queryset = self.queryset
+                queryset = SaveCv.objects.all()
                 if not queryset:
                     return Response({'message': 'SaveCv Not Found'}, status=status.HTTP_404_NOT_FOUND)
                 queryset.delete()
