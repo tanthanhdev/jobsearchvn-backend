@@ -15,11 +15,11 @@ from .manager import CustomUserManager
 # Create your models here.
 
 # iterable
-GENDER_CHOICES =(
-  ("Female", "female"),
-  ("Male", "male"),
-  ("Other", "other"),
-)
+# GENDER_CHOICES =(
+#   ("Female", "female"),
+#   ("Male", "male"),
+#   ("Other", "other"),
+# )
 
 def unique_slugify(instance, slug):
     model = instance.__class__
@@ -39,7 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                                               Unselect this instead of deleting accounts.')
     date_joined = models.DateTimeField(('date joined'), default=timezone.now)
     #
-    gender = models.CharField(max_length=10, null=True, blank=True, choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=10, null=True, blank=True)
     phone_number = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True)
     address = models.CharField(max_length=255, null=True, blank=True)

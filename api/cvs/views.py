@@ -73,7 +73,7 @@ class CvViewSet(viewsets.ModelViewSet):
             if not serializer.cv_career_exists():
                 messages['cv_career'] = "CV career not exists"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)              
@@ -94,7 +94,7 @@ class CvViewSet(viewsets.ModelViewSet):
                 if not serializer.cv_career_exists():
                     messages['cv_career'] = "CV career not exists"
                 if messages:
-                    return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                    return Response(messages, status=status.HTTP_400_BAD_REQUEST)
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -107,13 +107,13 @@ class CvViewSet(viewsets.ModelViewSet):
             if not slug:
                 queryset = Cv.objects.filter(Q(user=request.user), Q(user__is_active=True))
                 if not queryset:
-                    return Response({'cv': 'Cv Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                    return Response({'cv': 'Cv Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all cv successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete all cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset = Cv.objects.get(Q(slug=slug), Q(user=request.user), Q(user__is_active=True))
                 queryset.delete()
-                return Response({'message': 'Delete cv successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -152,7 +152,7 @@ class CvSaveViewSet(viewsets.ModelViewSet):
             if serializer.SaveCv_exists():
                 messages['message'] = "Save Cv has exists"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)              
@@ -164,10 +164,10 @@ class CvSaveViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'message': 'SaveCv Not Found'}, status=status.HTTP_404_NOT_FOUND)
                 queryset.delete()
-                return Response({'message': 'Delete all save cv successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete all save cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 SaveCv.objects.get(pk=id).delete()
-                return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -211,7 +211,7 @@ class Cv_TemplateUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = Cv_TemplateSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:
@@ -241,7 +241,7 @@ class ViewPublicCv_TemplateViewSet(viewsets.ModelViewSet):
                 cv.save()
                 return Response({'message': "Updated view", 'view': cv.view}, status=status.HTTP_200_OK)
             except:
-                return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'cv_template': 'Cv_Template not found'}, status=status.HTTP_400_BAD_REQUEST)
 
 # Cv_Career Unauthenticated
 class Cv_CareerUnauthenticatedViewSet(viewsets.ModelViewSet):
@@ -261,7 +261,7 @@ class Cv_CareerUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = Cv_CareerSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'cv_career': 'Cv_Career not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'cv_career': 'Cv_Career not found'}, status=status.HTTP_400_BAD_REQUEST)
         
 # Cv_Design Unauthenticated
 class Cv_DesignUnauthenticatedViewSet(viewsets.ModelViewSet):
@@ -281,7 +281,7 @@ class Cv_DesignUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = Cv_DesignSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'cv_design': 'Cv_Design not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'cv_design': 'Cv_Design not found'}, status=status.HTTP_400_BAD_REQUEST)
 
 class MatchCVViewSet(viewsets.ModelViewSet):
     queryset = Cv.objects.all()

@@ -64,7 +64,6 @@ class JobViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
         serializer = JobSerializer(data=request.data, context={
             'request': request
         })
@@ -77,7 +76,7 @@ class JobViewSet(viewsets.ModelViewSet):
             if not serializer.campaign_exists():
                 messages['Campaign'] = "Campaign not found"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
@@ -98,7 +97,7 @@ class JobViewSet(viewsets.ModelViewSet):
             if not serializer.country_exists():
                 messages['Country'] = "Country not found"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.tag_new()
             serializer.save()
             return Response(serializer.data)
@@ -109,13 +108,13 @@ class JobViewSet(viewsets.ModelViewSet):
             if not slug:
                 queryset = Job.objects.filter(empployer__user=request.user)
                 if not queryset:
-                    return Response({'job': 'Job Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                    return Response({'job': 'Job Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all job successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete all job successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset = Job.objects.get(Q(slug=slug), Q(employer__user=request.user))
                 queryset.delete()
-                return Response({'message': 'Delete job successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete job successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -222,13 +221,13 @@ class CampaignViewSet(viewsets.ModelViewSet):
             if not slug:
                 queryset = Campaign.objects.all()
                 if not queryset:
-                    return Response({'message': 'Campaign Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                    return Response({'message': 'Campaign Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all campaign successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete all campaign successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset = Campaign.objects.get(slug=slug)
                 queryset.delete()
-                return Response({'message': 'Delete campaign successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete campaign successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -283,9 +282,9 @@ class JobUnauthenticatedViewSet(viewsets.ModelViewSet):
                 serializer = JobSerializer(queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({'job': 'Job not found'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'job': 'Job not found'}, status=status.HTTP_400_BAD_REQUEST)
         except:
-            return Response({'job': 'Job not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'job': 'Job not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:
@@ -313,7 +312,7 @@ class TagUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = TagSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'tag': 'Tag not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'tag': 'Tag not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:
@@ -330,7 +329,7 @@ class TagUnauthenticatedViewSet(viewsets.ModelViewSet):
             if serializer.tag_name_exists():
                 messages['name'] = "Tag name exists"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
@@ -340,7 +339,7 @@ class TagUnauthenticatedViewSet(viewsets.ModelViewSet):
             if slug:
                 queryset = Tag.objects.get(slug=slug)
                 queryset.delete()
-                return Response({'message': 'Delete tag successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete tag successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -363,7 +362,7 @@ class CountryUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = CountrySerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'country': 'Country not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'country': 'Country not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:
@@ -392,7 +391,7 @@ class CityUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = CitySerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'city': 'City not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'city': 'City not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:
@@ -420,7 +419,7 @@ class JobTypeUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = JobTypeSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'message': 'JobType not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'JobType not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:

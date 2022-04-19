@@ -22,8 +22,9 @@ from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from api.users.permissions import IsTokenValid
+from api.users.permissions import IsTokenValid, IsEmployer
 from operator import or_, and_
+import operator
 
 from api.users import status_http
 
@@ -69,22 +70,57 @@ class SearchJobViewSet(viewsets.ModelViewSet):
 class SearchCvViewSet(viewsets.ModelViewSet):
     queryset = Cv.objects.filter(status=1)
     default_serializer_classes = CvSerializer
-    permission_classes = []
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
     pagination_class = CustomPagination
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
     
     def list(self, request, *args, **kwargs):
-        queryset = self.queryset
-        query_string = request.GET.get('q')
-        # filter here
-        if query_string:
-            query_string = query_string.strip()
-            queryset = queryset.filter(Q(title__icontains=query_string)
-                                          | Q(target_major__icontains=query_string))
-        if queryset.count() == 0:
-            return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
+        queryset = Cv.objects.filter(status=1).order_by('-updated_at')
+        if request.GET:
+            # filter here
+            query_string = request.GET.get('q', "").strip()
+            adr = request.GET.get('adr', "").strip()
+            gender = request.GET.get('gender', "").strip()
+            edu_lv = request.GET.get('edu_lv', "").strip()
+            edu_name = request.GET.get('edu_name', "").strip()
+            comp_worked = request.GET.get('comp_worked', "").strip()
+            language = request.GET.get('language', "").strip()
+            display_priority = request.GET.get('display_priority', "").strip()
+            if query_string:
+                queryset = queryset.filter(Q(title__icontains=query_string) 
+                                           | Q(target_major__icontains=query_string)
+                                           | Q(member__user__address__icontains=query_string)
+                                           | Q(member__user__first_name__icontains=query_string)
+                                           | Q(member__user__last_name__icontains=query_string)
+                                           | Q(cv_cv_educations__university_name__icontains=query_string)
+                                           | Q(cv_cv_educations__university_name__icontains=query_string)
+                                           | Q(cv_cv_experiences__company_name__icontains=query_string)
+                                           | Q(cv_cv_skills__name__icontains=query_string)
+                                           | Q(cv_cv_certificates__name__icontains=query_string)).distinct()
+            if adr:
+                queryset = queryset.filter(Q(member__user__address__icontains=adr))
+            if gender:
+                queryset = queryset.filter(Q(member__user__gender=gender))
+            if edu_lv:
+                filterUniserName_eduLv = reduce(operator.or_, (Q(cv_cv_educations__university_name__icontains = item) for item in edu_lv))
+                queryset = queryset.filter(Q(filterUniserName_eduLv))
+            if edu_name:
+                queryset = queryset.filter(Q(cv_cv_educations__university_name__icontains=edu_lv)).distinct()
+            if comp_worked:
+                queryset = queryset.filter(Q(cv_cv_experiences__company_name__icontains=comp_worked)).distinct()
+            if language:
+                queryset = queryset.filter(Q(cv_cv_skills__name__icontains=language) | Q(cv_cv_certificates__name__icontains=language)).distinct()
+            if display_priority:
+                if display_priority == "latest":
+                    queryset = queryset.order_by('-updated_at')
+                elif display_priority == "on_job":
+                    queryset = queryset.filter(Q(member__is_looking_for_a_job=True)).distinct()
+                elif display_priority == "exp":
+                    queryset = queryset.filter(Q(cv_cv_experiences__isnull=False)).distinct()
+            if queryset.count() == 0:
+                return Response({'message': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
         # pagination here
         # The ViewSet class inherits from APIView. The relation is: View(in Django) -> APIView -> ViewSet
         # The ModelViewSetclass inherits from GenericViewSet . The relation is: View(in Django) -> APIView -> GenericAPIView -> GenericViewSet -> ModelViewSet

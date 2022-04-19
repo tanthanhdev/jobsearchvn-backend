@@ -86,7 +86,7 @@ class Cv(models.Model):
     slug = models.CharField(max_length=255, null=True, blank=True)
     view = models.BigIntegerField(blank=True, default=0)
     target_major = models.TextField()
-    status = models.CharField(max_length=100, blank=True, default=1)
+    status = models.CharField(max_length=100, blank=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 

@@ -100,7 +100,7 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
             if not serializer.member_exists():
                 messages['Member'] = "Member not found"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -110,13 +110,13 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
             if not id:
                 queryset = Follow.objects.filter(member__user=request.user)
                 if not queryset:
-                    return Response({'follow': 'Follow Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                    return Response({'follow': 'Follow Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
                 queryset.delete()
-                return Response({'message': 'Delete follow successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete follow successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -160,7 +160,7 @@ class SaveJobViewSet(viewsets.ModelViewSet):
             if not serializer.job_exists():
                 messages['Job'] = "Job not found"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -170,12 +170,12 @@ class SaveJobViewSet(viewsets.ModelViewSet):
             if not id:
                 queryset = SaveJob.objects.filter(member__user=request.user)
                 if not queryset:
-                    return Response({'save job': 'SaveJob Not Found'}, status=status.HTTP_204_NO_CONTENT)
+                    return Response({'save job': 'SaveJob Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all save job successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete all save job successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
                 queryset.delete()
-                return Response({'message': 'Delete save job successfully'}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'message': 'Delete save job successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)

@@ -34,7 +34,7 @@ class Member(models.Model):
     avatar = models.ImageField(upload_to=member_upload_file, null=True, blank=True)
     resume = models.CharField(max_length=255, null=True, blank=True)
     salary = models.BigIntegerField(blank=True, null=True)
-    type = models.CharField(max_length=100, blank=True, null=True)
+    is_looking_for_a_job = models.BooleanField(blank=True, null=True, default=False)
     currency = models.CharField(max_length=255, blank=True, null=True)
     birthday = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)

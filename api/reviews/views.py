@@ -69,7 +69,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             if not serializer.employer_exists():
                 messages['Employer'] = "Employer not found"
             if messages:
-                return Response(messages, status=status.HTTP_204_NO_CONTENT)
+                return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
@@ -92,7 +92,7 @@ class ReviewUnauthenticatedViewSet(viewsets.ModelViewSet):
             serializer = ReviewSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'review': 'Review not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'review': 'Review not found'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     

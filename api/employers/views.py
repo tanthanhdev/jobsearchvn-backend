@@ -84,7 +84,7 @@ class PublicEmployerViewSet(viewsets.ModelViewSet):
             serializer = PublicEmployerSerializer(self.queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
-            return Response({'employer': 'Employer not found'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'employer': 'Employer not found'}, status=status.HTTP_400_BAD_REQUEST)
     
     def retrieve(self, request, slug=None):
         try:
