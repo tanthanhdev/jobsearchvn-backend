@@ -662,7 +662,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         except Exception as e:
             print(e)
             user.delete()
-            return e
+            return False
         return True
 
 class RegistrationEmployerSerializer(serializers.ModelSerializer):
