@@ -662,7 +662,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         except Exception as e:
             print(e)
             user.delete()
-            return False
+            raise MyMessage(e, {'status_code': status.HTTP_400_BAD_REQUEST})
         return True
 
 class RegistrationEmployerSerializer(serializers.ModelSerializer):
