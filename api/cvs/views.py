@@ -206,7 +206,7 @@ class Cv_TemplateUnauthenticatedViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = self.queryset
+            queryset = Cv_Template.objects.all()
             query_string = request.GET.get('q')
             cv_career = request.GET.get('cv_career')
             cv_design = request.GET.get('cv_design')
