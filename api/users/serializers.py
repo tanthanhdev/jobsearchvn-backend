@@ -609,7 +609,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def is_email_exist(self):
         try:
-            User.objects.get(username=self.validated_data['email'])
+            User.objects.get(Q(username=self.validated_data['email']) | Q(email=self.validated_data['email']))
             return 'Email exist!'
         except:
             return False
@@ -662,6 +662,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         except Exception as e:
             print(e)
             user.delete()
+            return e
         return True
 
 class RegistrationEmployerSerializer(serializers.ModelSerializer):

@@ -171,6 +171,26 @@ class CvSaveViewSet(viewsets.ModelViewSet):
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
+# Public CV
+class PublicCVViewSet(viewsets.ModelViewSet):
+    queryset = Cv.objects.all()
+    default_serializer_classes = CvSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+ 
+    def retrieve(self, request, slug=None):
+        try:
+            queryset = Cv.objects.get(slug=slug)
+            serializer = CvSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv': 'Cv not found'}, status=status.HTTP_404_NOT_FOUND)
+        
 # Cv_Template Unauthenticated
 
 class Cv_TemplateUnauthenticatedViewSet(viewsets.ModelViewSet):

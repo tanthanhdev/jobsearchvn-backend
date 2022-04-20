@@ -24,6 +24,10 @@ cv_list = CvViewSet.as_view({
     'post': 'create', # Create a new
     'delete': 'destroy', # delete all
 })
+# public cv
+public_cv_detail = PublicCVViewSet.as_view({
+    'get': 'retrieve', # get detail
+})
 # cv template
 cv_template_unauth_list = Cv_TemplateUnauthenticatedViewSet.as_view({
     'get': 'list', # Get lists
@@ -65,6 +69,8 @@ urlpatterns = [
     path('cvs/save/', cv_save_list, name='cv_save_list'),
     path('cvs/<slug:slug>/', cv_detail, name='cvs_detail'),
     path('cvs/', cv_list, name='cv_list'),
+    # public cv
+    path('public/cvs/<slug:slug>/', public_cv_detail, name='public_cv_detail'),
     # cv template model
     path('public/cv-template/', cv_template_unauth_list, name='cv_template_unauth_list'),
     path('public/view/cv-template/', view_public_cv_template, name='view_public_cv_template'),
