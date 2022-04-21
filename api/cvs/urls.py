@@ -56,6 +56,9 @@ cv_save_list = CvSaveViewSet.as_view({
     'post': 'create', # Create a new
     'delete': 'destroy', # delete all
 })
+cv_save_exists_detail = CvSaveViewSet.as_view({
+    'get': 'check_exists', # get is exists
+})
 # match cv
 match_cv_list = MatchCVViewSet.as_view({
     'get': 'list', # Get lists
@@ -69,6 +72,7 @@ urlpatterns = [
     path('cvs/save/', cv_save_list, name='cv_save_list'),
     path('cvs/<slug:slug>/', cv_detail, name='cvs_detail'),
     path('cvs/', cv_list, name='cv_list'),
+    path('cvs/save/<int:id>/exists/', cv_save_exists_detail, name='cv_save_exists_detail'),
     # public cv
     path('public/cvs/<slug:slug>/', public_cv_detail, name='public_cv_detail'),
     # cv template model

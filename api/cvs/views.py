@@ -130,14 +130,14 @@ class CvSaveViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            serializer = SaveCvSerializer(SaveCv.objects.all(), many=True)
+            serializer = SaveCvSerializer(SaveCv.objects.filter(employer=request.user.employer), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
     
     def retrieve(self, request, id=None):
         try:
-            queryset = SaveCv.objects.get(pk=id)
+            queryset = SaveCv.objects.get(Q(pk=id), Q(employer=request.user.employer))
             serializer = SaveCvSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -160,7 +160,7 @@ class CvSaveViewSet(viewsets.ModelViewSet):
     def destroy(self, request, id=None, format=None):
         try:
             if not id:
-                queryset = SaveCv.objects.all()
+                queryset = SaveCv.objects.all(employer=request.user.employer)
                 if not queryset:
                     return Response({'message': 'SaveCv Not Found'}, status=status.HTTP_404_NOT_FOUND)
                 queryset.delete()
@@ -170,6 +170,13 @@ class CvSaveViewSet(viewsets.ModelViewSet):
                 return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def check_exists(self, request, id=None):
+        try:
+            SaveCv.objects.get(Q(cv__pk=id), Q(employer=request.user.employer))
+            return Response({'message': 'Exists'}, status=status.HTTP_200_OK)
+        except:
+            return Response({'cv': 'SaveCv not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Public CV
 class PublicCVViewSet(viewsets.ModelViewSet):

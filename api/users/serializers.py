@@ -1010,5 +1010,5 @@ class UserSerializer(serializers.ModelSerializer):
 class UserCustomPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'is_active', 'is_staff', 'gender'
+        fields = ('id', 'first_name', 'last_name', 'is_active', 'is_staff', 'gender', 'email'
                   , 'phone_number', 'city', 'address')
