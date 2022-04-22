@@ -51,3 +51,13 @@ class SkillAdmin(admin.ModelAdmin):
     model = Skill
     list_display = ['pk', 'name']
 admin.site.register(Skill, SkillAdmin)
+
+class SaveJobAdmin(admin.ModelAdmin):
+    model = SaveJob
+    list_display = ['pk', 'job', 'member']
+admin.site.register(SaveJob, SaveJobAdmin)
+
+class ApplyAdmin(admin.ModelAdmin):
+    model = Apply
+    list_display = ['pk', 'job', 'member']
+admin.site.register(Apply, ApplyAdmin)

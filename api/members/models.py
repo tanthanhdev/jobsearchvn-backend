@@ -80,6 +80,16 @@ class SaveJob(models.Model):
     class Meta:
         ordering = ('-pk',)
         db_table = 'save_jobs'  
+
+class Apply(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_applies")
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="job_applies")
+    status = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'applies'  
         
 # Table educations
 class Education(models.Model):

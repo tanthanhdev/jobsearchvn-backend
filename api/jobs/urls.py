@@ -85,7 +85,10 @@ job_types_unauth_list = JobTypeUnauthenticatedViewSet.as_view({
 job_types_unauth_detail = JobTypeUnauthenticatedViewSet.as_view({
     'get': 'retrieve', # get detail
 })
-
+# Cv apply campaign
+apply_campaign_detail = ApplyCampaignViewSet.as_view({
+    'get': 'retrieve', # get detail
+})
 
 urlpatterns = [
     # dashboard
@@ -111,4 +114,6 @@ urlpatterns = [
     # Public job types
     path('public/job-types/<slug:slug>/', job_types_unauth_detail, name='job_types_unauth_detail'),
     path('public/job-types/', job_types_unauth_list, name='job_types_unauth_list'),
+    # Cv apply for campaign
+    path('apply/campaigns/<slug:slug>/', apply_campaign_detail, name='apply_campaign_detail'),
 ]

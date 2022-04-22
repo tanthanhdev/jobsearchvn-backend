@@ -14,6 +14,8 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime    
 
+from api.members.models import Apply
+from api.members.serializers import ApplySerializer
 from .models import *
 from .serializers import (
     JobSerializer, JobUpdateSerializer, TagSerializer,
@@ -106,15 +108,15 @@ class JobViewSet(viewsets.ModelViewSet):
     def destroy(self, request, slug=None, format=None):
         try:
             if not slug:
-                queryset = Job.objects.filter(empployer__user=request.user)
+                queryset = Job.objects.filter(empployer=request.user.employer)
                 if not queryset:
                     return Response({'job': 'Job Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all job successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all job successfully'}, status=status.HTTP_200_OK)
             else:
-                queryset = Job.objects.get(Q(slug=slug), Q(employer__user=request.user))
+                queryset = Job.objects.get(Q(slug=slug) & Q(employer=request.user.employer))
                 queryset.delete()
-                return Response({'message': 'Delete job successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete job successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -223,13 +225,34 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'message': 'Campaign Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all campaign successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all campaign successfully'}, status=status.HTTP_200_OK)
             else:
                 queryset = Campaign.objects.get(slug=slug)
                 queryset.delete()
-                return Response({'message': 'Delete campaign successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete campaign successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+# CV apply for campaign
+class ApplyCampaignViewSet(viewsets.ModelViewSet):
+    queryset = Apply.objects.all()
+    default_serializer_classes = ApplySerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsEmployer]
+    # permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def retrieve(self, request, slug=None):
+        try:
+            campaign = Campaign.objects.get(slug=slug)
+            queryset = Apply.objects.filter(job__campaign=campaign)
+            serializer = ApplySerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'message': 'Apply not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class JobCampaignViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()

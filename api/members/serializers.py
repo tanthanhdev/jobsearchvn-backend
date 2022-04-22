@@ -18,6 +18,8 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 # models
 from .models import *
+from api.cvs.models import (Cv, CvEducation, CvExperience,
+                            CvSkill, CvSocialActivity, CvCertificate)
 # serializers
 from api.users.serializers import UserCustomPublicSerializer
 from api.employers.serializers import EmployerRetriveSerializer
@@ -64,7 +66,52 @@ class MyMessage(APIException):
         APIException.__init__(self, msg)
         self.status_code = attrs.get('status_code')
         self.message = msg
- 
+
+class CvEducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CvEducation
+        fields = ('__all__')
+class CvExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CvExperience
+        fields = ('__all__')
+class CvSkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CvSkill
+        fields = ('__all__')
+class CvSocialActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CvSocialActivity
+        fields = ('__all__')
+class CvCertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CvCertificate
+        fields = ('__all__')
+class FilteredCVSerializer(serializers.ListSerializer):
+    
+    def to_representation(self, data):
+        data = data.filter(status=1)
+        return super(FilteredCVSerializer, self).to_representation(data)
+class CvSerializer(serializers.ModelSerializer):
+    #
+    cv_cv_educations = CvEducationSerializer(required=True, many=True)
+    cv_cv_experiences = CvExperienceSerializer(required=True, many=True)
+    cv_cv_skills = CvSkillSerializer(required=True, many=True)
+    cv_cv_social_activities = CvSocialActivitySerializer(required=True, many=True)
+    cv_cv_certificates = CvCertificateSerializer(required=True, many=True)
+    class Meta:
+        model = Cv
+        list_serializer_class = FilteredCVSerializer
+        fields = ('__all__')
+        
+    
+class MemberCVsService(serializers.ModelSerializer):
+    member_cvs = CvSerializer(many=True)
+    user = UserCustomPublicSerializer()
+    class Meta:
+        model = Member
+        fields = ('__all__')
+
 class MemberCustomPublicSerializer(serializers.ModelSerializer):
     user = UserCustomPublicSerializer()
     class Meta:
@@ -207,6 +254,71 @@ class SaveJobSerializer(serializers.ModelSerializer):
         except:
             return serializers.ValidationError("Bad Request")
         return serializers.ValidationError("Server Error")
+    
+class ApplySerializer(serializers.ModelSerializer):
+    job_id = serializers.CharField(required=True)
+    member = MemberCVsService(required=False)
+    job = JobRetriveSerializer(required=False)
+    class Meta:
+        model = Apply
+        fields = ("__all__")
+        
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+ 
+    def job_exists(self):
+        job = Job.objects.filter(pk=self.validated_data['job_id'])
+        if job:
+            return True
+        return False
+    
+    def apply_exists(self):
+        try:
+            Apply.objects.get(Q(job_id=self.validated_data['job_id'])
+                                      , Q(member=self._current_user().member))
+            return True
+        except:
+            return False
+  
+    def create(self, validated_data):
+        try:
+            current_user = self._current_user()
+            apply = Apply.objects.create(job_id=validated_data['job_id'],
+                                            member=current_user.member)
+            apply.save()
+            return apply
+        except:
+            return serializers.ValidationError("Bad Request")
+        return serializers.ValidationError("Server Error")
+
+class ApplyUpdateSerializer(serializers.ModelSerializer):
+    job_id = serializers.CharField(required=False)
+    status = serializers.CharField(required=True)
+    member = MemberRetriveSerializer(required=False)
+    job = JobRetriveSerializer(required=False)
+    class Meta:
+        model = Apply
+        fields = ("__all__")
+        
+    # Get current user login
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def update(self, instance, validated_data):
+        fields = ['status']
+        for field in fields:
+            try:
+                setattr(instance, field, validated_data[field])
+            except KeyError:  # validated_data may not contain all fields during HTTP PATCH
+                pass
+        instance.save()
+        return instance
 
 class MemberUpdateSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=False)
