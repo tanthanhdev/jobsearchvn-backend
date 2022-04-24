@@ -76,6 +76,7 @@ class EmployerUpdateSerializer(serializers.ModelSerializer):
     web_link = serializers.CharField(required=False)
     status = serializers.BooleanField(required=False)
     package_type = serializers.CharField(required=False)
+    status = serializers.BooleanField(required=False)
     class Meta:
         model = Employer
         fields = "__all__"
@@ -91,7 +92,7 @@ class EmployerUpdateSerializer(serializers.ModelSerializer):
         # instance.model_method() # call model method for instance level computation
         # # call super to now save modified instance along with the validated data
         # return super().update(instance, validated_data)  
-        fields = ['company_name', 'company_location', 'company_size', 'logo', 'description', 'web_link', 'package_type']
+        fields = ['company_name', 'company_location', 'company_size', 'logo', 'description', 'web_link', 'package_type', 'status']
         for field in fields:
             try:
                 setattr(instance, field, validated_data[field])
