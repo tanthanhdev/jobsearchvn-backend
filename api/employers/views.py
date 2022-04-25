@@ -63,7 +63,7 @@ class EmployerViewSet(viewsets.ModelViewSet):
         
 # Public employer
 class PublicEmployerViewSet(viewsets.ModelViewSet):
-    queryset = Employer.objects.filter(status=True, user__is_active=True, user__is_staff=True)
+    queryset = Employer.objects.filter(user__is_active=True, user__is_staff=True)
     default_serializer_classes = PublicEmployerSerializer
     permission_classes = []
     pagination_class = CustomPagination
