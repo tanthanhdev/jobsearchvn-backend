@@ -88,7 +88,7 @@ class PublicEmployerViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, slug=None):
         try:
-            queryset = Employer.objects.get(slug=slug, status=True)
+            queryset = Employer.objects.get(slug=slug, user__is_active=True, user__is_staff=True)
             serializer = PublicEmployerSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
