@@ -193,7 +193,7 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Apply.objects.filter(Q(member__user=request.user))
+            queryset = Apply.objects.filter(Q(member__user=request.user.member))
             if queryset:
                 serializer = ApplySerializer(queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -202,9 +202,12 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
         except:
             return Response({'apply job': 'Apply not found'}, status=status.HTTP_404_NOT_FOUND)
     
-    def retrieve(self, request, id=None):
+    def retrieve(self, request, id=None, slug=None):
         try:
-            queryset = Apply.objects.get(member__user=request.user, member_id=id)
+            if id is not None:
+                queryset = Apply.objects.get(member__user=request.user.member, pk=id)
+            if slug is not None:
+                queryset = Apply.objects.get(member__user=request.user.member, job__slug=slug)
             serializer = ApplySerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -229,13 +232,13 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
     def destroy(self, request, id=None, format=None):
         try:
             if not id:
-                queryset = Apply.objects.filter(member__user=request.user)
+                queryset = Apply.objects.filter(member__user=request.user.member)
                 if not queryset:
                     return Response({'apply job': 'Apply Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
                 return Response({'message': 'Delete all apply job successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
+                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user.member))
                 queryset.delete()
                 return Response({'message': 'Delete apply job successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:

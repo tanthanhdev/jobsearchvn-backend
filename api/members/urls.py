@@ -75,6 +75,7 @@ urlpatterns = [
     path('save/jobs/<int:id>/', save_job_detail, name='save_job_detail'),
     # apply jobs
     path('apply/jobs/', apply_job_list, name='apply_job_list'),
+    path('apply/jobs/<slug:slug>/', apply_job_detail, name='apply_job_detail'),
     path('apply/jobs/<int:id>/', apply_job_detail, name='apply_job_detail'),
     path('employer/apply/jobs/<int:id>/', apply_job_for_employer_detail, name='apply_job_for_employer_detail'),
 ]
