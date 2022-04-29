@@ -15,7 +15,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import *
 from .serializers import (FollowSerializer, MemberSerializer, MemberUpdateSerializer
-    , SaveJobSerializer, ApplySerializer, ApplyUpdateSerializer)
+    , SaveJobSerializer, ApplySerializer, ApplyUpdateSerializer,
+    RegisterNotificationSerializer, RegisterNotificationUpdateSerializer)
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -193,7 +194,7 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Apply.objects.filter(Q(member__user=request.user.member))
+            queryset = Apply.objects.filter(Q(member__user=request.user))
             if queryset:
                 serializer = ApplySerializer(queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -205,9 +206,9 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, id=None, slug=None):
         try:
             if id is not None:
-                queryset = Apply.objects.get(member__user=request.user.member, pk=id)
+                queryset = Apply.objects.get(member__user=request.user, pk=id)
             if slug is not None:
-                queryset = Apply.objects.get(member__user=request.user.member, job__slug=slug)
+                queryset = Apply.objects.get(member__user=request.user, job__slug=slug)
             serializer = ApplySerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -232,13 +233,13 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
     def destroy(self, request, id=None, format=None):
         try:
             if not id:
-                queryset = Apply.objects.filter(member__user=request.user.member)
+                queryset = Apply.objects.filter(member__user=request.user)
                 if not queryset:
                     return Response({'apply job': 'Apply Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
                 return Response({'message': 'Delete all apply job successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user.member))
+                queryset = Follow.objects.get(Q(pk=id), Q(member__user=request.user))
                 queryset.delete()
                 return Response({'message': 'Delete apply job successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
@@ -268,3 +269,70 @@ class ApplyJobForEmployerViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'message': 'Apply update Not Found'}, status=status.HTTP_404_NOT_FOUND)
+
+class RegisterJobViewSet(viewsets.ModelViewSet):
+    queryset = RegisterNotification.objects.all()
+    default_serializer_classes = RegisterNotificationSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
+    # permission_classes = []
+    pagination_class = None
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = RegisterNotification.objects.filter(Q(member__user=request.user))
+            if queryset:
+                serializer = RegisterNotificationSerializer(queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'registerJobViewSet': 'RegisterNotification not found'}, status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response({'registerJobViewSet': 'RegisterNotification not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    def retrieve(self, request, id=None):
+        try:
+            queryset = RegisterNotification.objects.get(member__user=request.user, pk=id)
+            serializer = RegisterNotificationSerializer(queryset)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response({'registerJobViewSet': 'RegisterNotification not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, *args, **kwargs):
+        serializer = RegisterNotificationSerializer(data=request.data, context={
+            'request': request
+        })
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, id=None, format=None):
+        try:
+            if not id:
+                queryset = RegisterNotification.objects.filter(member__user=request.user)
+                if not queryset:
+                    return Response({'registerNotification': 'RegisterNotification Not Found'}, status=status.HTTP_400_BAD_REQUEST)
+                queryset.delete()
+                return Response({'message': 'Delete all registerNotification successfully'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                queryset = RegisterNotification.objects.get(Q(pk=id), Q(member__user=request.user))
+                queryset.delete()
+                return Response({'message': 'Delete registerNotification successfully'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def update(self, request, format=None):
+        try:
+            queryset = RegisterNotification.objects.get(member=request.user.member)
+            data = request.data
+            serializer = RegisterNotificationUpdateSerializer(queryset, data=data, context={
+                'request': request
+            })
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Register update successfully!'}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': 'Register Update Not Found'}, status=status.HTTP_404_NOT_FOUND)

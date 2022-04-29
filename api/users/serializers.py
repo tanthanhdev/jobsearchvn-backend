@@ -1002,13 +1002,13 @@ class MySimpleJWTSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MySimpleJWTSerializer
     
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = "__all__"
+# class UserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = "__all__"
         
 class UserCustomPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'is_active', 'is_staff', 'gender', 'email'
-                  , 'phone_number', 'city', 'address')
+        fields = ('id', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser', 'gender', 'email'
+                  , 'phone_number', 'city', 'address', 'last_login', 'date_joined', 'updated_at')

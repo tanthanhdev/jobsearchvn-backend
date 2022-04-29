@@ -187,3 +187,38 @@ class Certificate(models.Model):
     
     def __str__(self):
         return self.name
+    
+# Table register_notifications
+LEVEL_CHOICES =(
+  ("Nhân viên", "Nhân viên"),
+  ("Quản lý", "Quản lý"),
+)
+CURRENCY_CHOICES =(
+  ("VND", "VND"),
+  ("USD", "USD"),
+)
+CRONJOB_CHOICES =(
+  ("daily", "daily"),
+  ("weekly", "weekly"),
+)
+class RegisterNotification(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="member_register_notifications")
+    #
+    job_name = models.CharField(max_length=255)
+    level = models.CharField(max_length=255, null=True, blank=True, choices=LEVEL_CHOICES)
+    district = models.CharField(max_length=255, null=True, blank=True)
+    major = models.CharField(max_length=255, null=True, blank=True)
+    salary = models.BigIntegerField(null=True, blank=True)
+    currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES)
+    cron_job = models.CharField(max_length=100, null=True, blank=True, choices=CRONJOB_CHOICES)
+    status = models.BooleanField(default=False, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-pk',)
+        db_table = 'register_notifications'
+    
+    def __str__(self):
+        return self.job_name
+    

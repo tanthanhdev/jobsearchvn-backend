@@ -62,6 +62,18 @@ apply_job_detail = ApplyJobViewSet.as_view({
 apply_job_for_employer_detail = ApplyJobForEmployerViewSet.as_view({
     'patch': 'update', # update
 })
+# register jobs
+register_jobs_list = RegisterJobViewSet.as_view({
+    'get': 'list', # Get lists
+    'post': 'create', # Create a new
+    'delete': 'destroy', # delete all
+})
+
+register_jobs_detail = RegisterJobViewSet.as_view({
+    'get': 'retrieve', # get detail
+    'patch': 'update', # update
+    'delete': 'destroy', # delete
+})
 
 urlpatterns = [
     # # dashboard
@@ -78,4 +90,7 @@ urlpatterns = [
     path('apply/jobs/<slug:slug>/', apply_job_detail, name='apply_job_detail'),
     path('apply/jobs/<int:id>/', apply_job_detail, name='apply_job_detail'),
     path('employer/apply/jobs/<int:id>/', apply_job_for_employer_detail, name='apply_job_for_employer_detail'),
+    # register notification jobs
+    path('register/jobs/', register_jobs_list, name='register_jobs_list'),
+    path('register/jobs/<int:id>/', register_jobs_detail, name='register_jobs_detail'),
 ]

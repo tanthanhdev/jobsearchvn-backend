@@ -23,7 +23,7 @@ from api.jobs.serializers import (
     JobSerializer,
 )
 from api.users.serializers import (
-    UserSerializer, UserCustomPublicSerializer
+    UserCustomPublicSerializer
 )
 from api.reviews.serializers import (ReviewCustomSerializer)
 # regex
@@ -102,7 +102,7 @@ class EmployerUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class EmployerSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserCustomPublicSerializer()
     
     class Meta:
         model = Employer

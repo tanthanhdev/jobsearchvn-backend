@@ -25,7 +25,7 @@ from api.users.serializers import UserCustomPublicSerializer
 from api.employers.serializers import EmployerRetriveSerializer
 from api.jobs.serializers import JobRetriveSerializer
 from api.users.serializers import (
-    UserSerializer, UserCustomPublicSerializer
+    UserCustomPublicSerializer
 )
 # regex
 import re
@@ -321,7 +321,7 @@ class ApplyUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class MemberUpdateSerializer(serializers.ModelSerializer):
-    user = UserSerializer(required=False)
+    user = UserCustomPublicSerializer(required=False)
     avatar = serializers.ImageField(required=False)
     resume = serializers.CharField(required=False)
     salary = serializers.IntegerField(required=False)
@@ -394,7 +394,7 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 class MemberSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserCustomPublicSerializer()
     #
     member_educations = EducationSerializer(required=False, many=True)
     member_experiences = ExperienceSerializer(required=False, many=True)
@@ -414,3 +414,78 @@ class PublicMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = "__all__"
+
+
+class RegisterNotificationSerializer(serializers.ModelSerializer):
+    member = MemberSerializer(required=False)
+    #
+    member_id = serializers.CharField(required=False)
+    job_name = serializers.CharField(required=True)
+    level = serializers.CharField(required=True)
+    district = serializers.CharField(required=True)
+    major = serializers.CharField(required=True)
+    salary = serializers.IntegerField(required=True)
+    currency = serializers.CharField(required=True)
+    cron_job = serializers.CharField(required=True)
+    status = serializers.BooleanField(required=False)
+    
+    class Meta:
+        model = RegisterNotification
+        depth = 1
+        fields = "__all__"
+        
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def create(self, validated_data):
+        try:
+            # Field is names cv (source path) so you should use this name when you fetch cvs from validated data:
+            # Otherwise cv is still in validated_data and Cv.objects.create() raises the error.
+            # job = Job.objects.create(employer=current_user.employer, **validated_data)
+            try:
+                registerJob = RegisterNotification.objects.create(**validated_data, member=self._current_user().member)
+            except Exception as e:
+                print('_____________________')
+                print(e)
+            registerJob.save()
+            return registerJob
+        except:
+            return serializers.ValidationError("Bad Request")
+        
+class RegisterNotificationUpdateSerializer(serializers.ModelSerializer):
+    member = MemberSerializer(required=False)
+    job_name = serializers.CharField(required=False)
+    level = serializers.CharField(required=False)
+    district = serializers.CharField(required=False)
+    major = serializers.CharField(required=False)
+    salary = serializers.IntegerField(required=False)
+    currency = serializers.CharField(required=False)
+    cron_job = serializers.CharField(required=False)
+    status = serializers.BooleanField(required=False)
+    #
+    class Meta:
+        model = RegisterNotification
+        fields = "__all__"
+        
+    # Get current user login
+    def _current_user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+        return False
+    
+    def update(self, instance, validated_data):
+        # instance.model_method() # call model method for instance level computation
+        # # call super to now save modified instance along with the validated data
+        # return super().update(instance, validated_data)  
+        fields = ['job_name', 'level', 'district', 'major', 'salary', 'currency', 'cron_job', 'status']
+        for field in fields:
+            try:
+                setattr(instance, field, validated_data[field])
+            except KeyError:  # validated_data may not contain all fields during HTTP PATCH
+                pass
+        instance.save()
+        return instance
