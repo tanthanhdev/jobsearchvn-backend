@@ -132,6 +132,11 @@ class MemberPkSerializer(serializers.ModelSerializer):
 # foreign
 class EducationCustomSerializer(serializers.ModelSerializer):
     member = MemberPkSerializer(required=False)
+    completion_date = serializers.DateField(required=False)
+    starting_date = serializers.DateField(required=False)
+    gpa = serializers.IntegerField(required=False)
+    major = serializers.CharField(required=False, allow_blank=True)
+    university_name = serializers.CharField(required=False, allow_blank=True)
     class Meta:
         model = Education
         fields = ('__all__')
@@ -334,6 +339,12 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
     member_skills = SkillCustomSerializer(required=False, many=True)
     member_social_activities = SocialActivityCustomSerializer(required=False, many=True)
     member_certificates = CertificateCustomSerializer(required=False, many=True)
+    # for user
+    # address = serializers.CharField(required=False)
+    # phone_number = serializers.CharField(required=False)
+    # first_name = serializers.CharField(required=False)
+    # last_name = serializers.CharField(required=False)
+    # gender = serializers.CharField(required=False)
     class Meta:
         model = Member
         fields = "__all__"
@@ -390,6 +401,17 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
                 setattr(instance, field, validated_data[field])
             except KeyError:  # validated_data may not contain all fields during HTTP PATCH
                 pass
+        if self.initial_data.get('address', None):
+            instance.user.address = self.initial_data.get('address', None)
+        if self.initial_data.get('phone_number', None):
+            instance.user.phone_number = self.initial_data.get('phone_number', None)
+        if self.initial_data.get('first_name', None):
+            instance.user.first_name = self.initial_data.get('first_name', None)
+        if self.initial_data.get('last_name', None):
+            instance.user.last_name = self.initial_data.get('last_name', None)
+        if self.initial_data.get('gender', None):
+            instance.user.gender = self.initial_data.get('gender', None)
+        instance.user.save()
         instance.save()
         return instance
 

@@ -140,14 +140,16 @@ class CvCertificateSerializer(serializers.ModelSerializer):
 
 # Main
 class CvUpdateSerializer(serializers.ModelSerializer):
+    member = MemberCustomPublicSerializer(required=False)
     cv_career = Cv_CareerRetriveSerializer(required=False, many=True)
     cv_design = Cv_DesignRetriveSerializer(required=False, many=True)
     # #
-    title = serializers.CharField(required=True)
-    target_major = serializers.CharField(required=True)
+    title = serializers.CharField(required=False)
+    target_major = serializers.CharField(required=False)
+    status = serializers.CharField(required=False)
     class Meta:
         model = Cv
-        fields = ('cv_career', 'cv_design', 'title', 'target_major')
+        fields = "__all__"
         
     # Get current user login
     def _current_user(self):
@@ -173,27 +175,17 @@ class CvUpdateSerializer(serializers.ModelSerializer):
             cv_design_ids.append(obj.pk)
         return cv_design_ids
     
-    def cv_career_exists(self):
-        cv_careers = self.validated_data.pop('cv_career', None)
-        if (cv_careers):
-            for cv_career in cv_careers:
-                try:
-                    Cv_Career.objects.get(pk=cv_career["id"])
-                    return True
-                except: return False
-        else: return False
-    
-    def cv_design_exists(self):
-        cv_designs = self.validated_data.pop('cv_design', None)
-        if (cv_designs):
-            for cv_design in cv_designs:
-                try:
-                    Cv_Design.objects.get(pk=cv_design["id"])
-                    return True
-                except: return False
-        else: return False
+    def check_one_active(self):
+        if self.validated_data.get('status', None) == '1':
+            cv = Cv.objects.filter(Q(status='1'), Q(member__user=self._current_user()))
+            if cv.count() >= 1:
+                raise MyMessage({
+                    'message': 'Bạn chỉ có thể mở khóa 1 CV.',
+                    }, {'status_code': status.HTTP_400_BAD_REQUEST})
+        return True
     
     def update(self, instance, validated_data):
+        self.check_one_active()
         # instance.model_method() # call model method for instance level computation
         # # call super to now save modified instance along with the validated data
         # return super().update(instance, validated_data)  
@@ -201,7 +193,7 @@ class CvUpdateSerializer(serializers.ModelSerializer):
         cv_design = self.initial_data.get('cv_design', [])
         instance.cv_career.set(self.update_cv_careers(cv_career))
         instance.cv_design.set(self.update_cv_designs(cv_design))
-        fields = ['title', 'target_major']
+        fields = ['title', 'target_major', 'status']
         for field in fields:
             try:
                 setattr(instance, field, validated_data[field])

@@ -35,7 +35,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
     # permission_classes = []
     pagination_class = None
-    # parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
@@ -230,18 +230,19 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def destroy(self, request, id=None, format=None):
+    def destroy(self, request, id=None, slug=None, format=None):
         try:
             if not id:
                 queryset = Apply.objects.filter(member__user=request.user)
                 if not queryset:
                     return Response({'apply job': 'Apply Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all apply job successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all apply job successfully'}, status=status.HTTP_200_OK)
             else:
-                queryset = Follow.objects.get(Q(pk=id), Q(member__user=request.user))
+                print(id)
+                queryset = Apply.objects.get(pk=id, member__user=request.user)
                 queryset.delete()
-                return Response({'message': 'Delete apply job successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete apply job successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
         

@@ -32,13 +32,14 @@ from api.users import status_http
 import operator
 from api.users.custom_pagination import CustomPagination
 from datetime import datetime    
+from api.users.permissions import IsMember
 
 class CvViewSet(viewsets.ModelViewSet):
     queryset = Cv.objects.all()
     default_serializer_classes = CvSerializer
-    permission_classes = [IsAuthenticated, IsTokenValid]
+    permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
     # permission_classes = []
-    pagination_class = None
+    pagination_class = CustomPagination
     lookup_field = 'slug'
     # parser_classes = [MultiPartParser, FormParser]
     
@@ -47,7 +48,14 @@ class CvViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Cv.objects.filter(Q(user=request.user), Q(user__is_active=True))
+            queryset = Cv.objects.filter(member__user=self.request.user).order_by('-status')
+            # The ViewSet class inherits from APIView. The relation is: View(in Django) -> APIView -> ViewSet
+            # The ModelViewSetclass inherits from GenericViewSet . The relation is: View(in Django) -> APIView -> GenericAPIView -> GenericViewSet -> ModelViewSet
+            # pagination_class is add in GenericAPIView, so you can't use it in a class inherits from APIView.You can try viewsets.GenericViewSet.
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = CvSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
             serializer = CvSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -56,7 +64,7 @@ class CvViewSet(viewsets.ModelViewSet):
     def retrieve(self, request):
         try:
             slug = request.GET.get('slug')
-            queryset = Cv.objects.get(slug=slug, user=request.user, user__is_active=True)
+            queryset = Cv.objects.get(slug=slug, member__user=self.request.user)
             serializer = CvSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -78,40 +86,32 @@ class CvViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)              
 
-    def update(self, request, format=None):
+    def update(self, request, slug=None, format=None):
         queryset = None
         try:
-            slug = request.GET.get('slug')
-            queryset = Cv.objects.get(Q(slug=slug), Q(user=request.user), Q(user__is_active=True))
-            data = request.data
-            serializer = CvUpdateSerializer(queryset, data=data, context={
-                'request': request
-            })
-            messages = {}
-            if serializer.is_valid():
-                if not serializer.cv_design_exists():
-                    messages['cv_design'] = "CV design not exists"
-                if not serializer.cv_career_exists():
-                    messages['cv_career'] = "CV career not exists"
-                if messages:
-                    return Response(messages, status=status.HTTP_400_BAD_REQUEST)
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            queryset = Cv.objects.get(slug=slug, member__user=self.request.user)
         except:
             return Response({'message': 'Cv Update Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        data = request.data
+        serializer = CvUpdateSerializer(queryset, data=data, context={
+            'request': request
+        })
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, format=None):
         try:
             slug = request.GET.get('slug')
             if not slug:
-                queryset = Cv.objects.filter(Q(user=request.user), Q(user__is_active=True))
+                queryset = Cv.objects.filter(member__user=self.request.user)
                 if not queryset:
                     return Response({'cv': 'Cv Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
                 return Response({'message': 'Delete all cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                queryset = Cv.objects.get(Q(slug=slug), Q(user=request.user), Q(user__is_active=True))
+                queryset = Cv.objects.get(slug=slug, member__user=self.request.user)
                 queryset.delete()
                 return Response({'message': 'Delete cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
@@ -192,7 +192,7 @@ class PublicCVViewSet(viewsets.ModelViewSet):
  
     def retrieve(self, request, slug=None):
         try:
-            queryset = Cv.objects.get(slug=slug)
+            queryset = Cv.objects.get(slug=slug, status='1')
             serializer = CvSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
