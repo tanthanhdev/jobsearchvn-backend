@@ -162,7 +162,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         try:
-            queryset = Campaign.objects.all()
+            queryset = Campaign.objects.filter(employer__user=request.user)
             if request.GET:
                 query_string = request.GET.get('q').strip()
                 if query_string:
@@ -178,7 +178,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, slug=None):
         try:
-            queryset = Campaign.objects.get(slug=slug)
+            queryset = Campaign.objects.get(slug=slug, employer__user=request.user)
             serializer = CampaignSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -201,7 +201,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
     def update(self, request, slug, format=None):
         queryset = None
         try:
-            queryset = Campaign.objects.get(slug=slug)
+            queryset = Campaign.objects.get(slug=slug, employer__user=request.user)
             data = request.data
             serializer = CampaignUpdateSerializer(queryset, data=data, context={
                 'request': request
@@ -221,7 +221,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
     def destroy(self, request, slug=None, format=None):
         try:
             if not slug:
-                queryset = Campaign.objects.all()
+                queryset = Campaign.objects.filter(employer__user=request.user)
                 if not queryset:
                     return Response({'message': 'Campaign Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
