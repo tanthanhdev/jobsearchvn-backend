@@ -360,41 +360,46 @@ class MemberUpdateSerializer(serializers.ModelSerializer):
         # instance.model_method() # call model method for instance level computation
         # # call super to now save modified instance along with the validated data
         # return super().update(instance, validated_data)  
-        instance.member_educations.all().delete()
-        instance.member_experiences.all().delete()
-        instance.member_skills.all().delete()
-        instance.member_social_activities.all().delete()
-        instance.member_certificates.all().delete()
-        member_educations = validated_data.get('member_educations', [])
-        aList = []
-        for val in member_educations:
-            val['member'] = self._current_user().member
-            aList.append(Education(**val))
-        Education.objects.bulk_create(aList)
-        member_experiences = validated_data.get('member_experiences', [])
-        aList = []
-        for val in member_experiences:
-            val['member'] = self._current_user().member
-            aList.append(Experience(**val))
-        Experience.objects.bulk_create(aList)
-        member_skills = validated_data.get('member_skills', [])
-        aList = []
-        for val in member_skills:
-            val['member'] = self._current_user().member
-            aList.append(Skill(**val))
-        Skill.objects.bulk_create(aList)
-        member_social_activities = validated_data.get('member_social_activities', [])
-        aList = []
-        for val in member_social_activities:
-            val['member'] = self._current_user().member
-            aList.append(SocialActivity(**val))
-        SocialActivity.objects.bulk_create(aList)
-        member_certificates = validated_data.get('member_certificates', [])
-        aList = []
-        for val in member_certificates:
-            val['member'] = self._current_user().member
-            aList.append(Certificate(**val))
-        Certificate.objects.bulk_create(aList)
+        if validated_data.get('member_educations', None) is not None:
+            instance.member_educations.all().delete()
+            member_educations = validated_data.get('member_educations', [])
+            aList = []
+            for val in member_educations:
+                val['member'] = self._current_user().member
+                aList.append(Education(**val))
+            Education.objects.bulk_create(aList)
+        if validated_data.get('member_experiences', None) is not None:
+            instance.member_experiences.all().delete()
+            member_experiences = validated_data.get('member_experiences', [])
+            aList = []
+            for val in member_experiences:
+                val['member'] = self._current_user().member
+                aList.append(Experience(**val))
+            Experience.objects.bulk_create(aList)
+        if validated_data.get('member_skills', None) is not None:
+            instance.member_skills.all().delete()
+            member_skills = validated_data.get('member_skills', [])
+            aList = []
+            for val in member_skills:
+                val['member'] = self._current_user().member
+                aList.append(Skill(**val))
+            Skill.objects.bulk_create(aList)
+        if validated_data.get('member_social_activities', None) is not None:
+            instance.member_social_activities.all().delete()
+            member_social_activities = validated_data.get('member_social_activities', [])
+            aList = []
+            for val in member_social_activities:
+                val['member'] = self._current_user().member
+                aList.append(SocialActivity(**val))
+            SocialActivity.objects.bulk_create(aList)
+        if validated_data.get('member_certificates', None) is not None:
+            instance.member_certificates.all().delete()
+            member_certificates = validated_data.get('member_certificates', [])
+            aList = []
+            for val in member_certificates:
+                val['member'] = self._current_user().member
+                aList.append(Certificate(**val))
+            Certificate.objects.bulk_create(aList)
         fields = ['avatar', 'resume', 'salary', 'type', 'currency', 'birthday',]
         for field in fields:
             try:

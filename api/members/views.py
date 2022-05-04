@@ -35,7 +35,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsTokenValid, IsMember]
     # permission_classes = []
     pagination_class = None
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
