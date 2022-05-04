@@ -143,9 +143,13 @@ class SaveJobViewSet(viewsets.ModelViewSet):
         except:
             return Response({'save job': 'SaveJob not found'}, status=status.HTTP_404_NOT_FOUND)
     
-    def retrieve(self, request, id=None):
+    def retrieve(self, request, id=None, slug=None):
         try:
-            queryset = SaveJob.objects.get(member__user=request.user, member_id=id)
+            queryset = {}
+            if id is not None:
+                queryset = SaveJob.objects.get(member__user=request.user, job_id=id)
+            if slug is not None:
+                queryset = SaveJob.objects.get(member__user=request.user, job__slug=slug)
             serializer = SaveJobSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -174,11 +178,11 @@ class SaveJobViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'save job': 'SaveJob Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all save job successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all save job successfully'}, status=status.HTTP_200_OK)
             else:
-                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
+                queryset = SaveJob.objects.get(Q(job_id=id), Q(member__user=request.user))
                 queryset.delete()
-                return Response({'message': 'Delete save job successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete save job successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -233,14 +237,13 @@ class ApplyJobViewSet(viewsets.ModelViewSet):
     def destroy(self, request, id=None, slug=None, format=None):
         try:
             if not id:
-                queryset = Apply.objects.filter(member__user=request.user)
+                queryset = Apply.objects.filter(Q(member__user=request.user), Q(status=None) | Q(status='0'))
                 if not queryset:
                     return Response({'apply job': 'Apply Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
                 return Response({'message': 'Delete all apply job successfully'}, status=status.HTTP_200_OK)
             else:
-                print(id)
-                queryset = Apply.objects.get(pk=id, member__user=request.user)
+                queryset = Apply.objects.get(Q(pk=id), Q(member__user=request.user), Q(status=None) | Q(status='0'))
                 queryset.delete()
                 return Response({'message': 'Delete apply job successfully'}, status=status.HTTP_200_OK)
         except:
@@ -316,11 +319,11 @@ class RegisterJobViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'registerNotification': 'RegisterNotification Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all registerNotification successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all registerNotification successfully'}, status=status.HTTP_200_OK)
             else:
                 queryset = RegisterNotification.objects.get(Q(pk=id), Q(member__user=request.user))
                 queryset.delete()
-                return Response({'message': 'Delete registerNotification successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete registerNotification successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
     

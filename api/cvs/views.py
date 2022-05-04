@@ -109,11 +109,11 @@ class CvViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'cv': 'Cv Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all cv successfully'}, status=status.HTTP_200_OK)
             else:
                 queryset = Cv.objects.get(slug=slug, member__user=self.request.user)
                 queryset.delete()
-                return Response({'message': 'Delete cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete cv successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -164,10 +164,10 @@ class CvSaveViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'message': 'SaveCv Not Found'}, status=status.HTTP_404_NOT_FOUND)
                 queryset.delete()
-                return Response({'message': 'Delete all save cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all save cv successfully'}, status=status.HTTP_200_OK)
             else:
                 SaveCv.objects.get(pk=id).delete()
-                return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete save cv successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
     

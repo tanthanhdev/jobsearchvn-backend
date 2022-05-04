@@ -362,7 +362,7 @@ class TagUnauthenticatedViewSet(viewsets.ModelViewSet):
             if slug:
                 queryset = Tag.objects.get(slug=slug)
                 queryset.delete()
-                return Response({'message': 'Delete tag successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete tag successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
         
