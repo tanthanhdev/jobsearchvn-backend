@@ -197,7 +197,7 @@ class FollowSerializer(serializers.ModelSerializer):
         return False
  
     def employer_exists(self):
-        employer = Member.objects.filter(pk=self.validated_data['employer_id'])
+        employer = Employer.objects.filter(pk=self.validated_data['employer_id'])
         if employer:
             return True
         return False
