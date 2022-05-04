@@ -7,10 +7,10 @@ class IsTokenValid(BasePermission):
     """
     Allows access only to user in token is exists.
     """
-    message = {'message': 'Token is invalid or expired.'}
+    message = {'message': 'Token is invalid or expired or not email verified.'}
     
     def has_permission(self, request, view):
-        return request.user and request.user.token is not None
+        return request.user and request.user.token is not None and request.user.email_verified
     
 class IsMember(BasePermission):
     """
@@ -19,7 +19,7 @@ class IsMember(BasePermission):
     message = {'message': 'You are not a member.'}
     
     def has_permission(self, request, view):
-        return request.user and request.user.is_active and request.user.is_staff is not True
+        return request.user and request.user.is_active and request.user.is_staff is not True and request.user.email_verified
     
 class IsEmployer(BasePermission):
     """
@@ -28,4 +28,4 @@ class IsEmployer(BasePermission):
     message = {'message': 'You are not a employer.'}
     
     def has_permission(self, request, view):
-        return request.user and request.user.is_active and request.user.is_staff
+        return request.user and request.user.is_active and request.user.is_staff and request.user.email_verified

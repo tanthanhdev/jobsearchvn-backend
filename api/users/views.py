@@ -354,7 +354,7 @@ def registration_employer_view(request):
                 data['email'] = check_exist
                 return Response(data, status=status_http.HTTP_ME_450_EMAIL_EXIST) 
             user = serializer.save()
-            serializer.send_mail()
+            # serializer.send_mail()
             data['message'] = 'Registered successfully! A mail sent to your mailbox for activation account.'
             # data['message'] = 'Registered successfully!'
             group = ""

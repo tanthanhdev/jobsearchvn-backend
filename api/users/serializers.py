@@ -766,7 +766,6 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
             return False
 
     def save(self):
-        print(self.validated_data)
         password = self.validated_data['password']
         group = self.validated_data['group']
 
@@ -789,6 +788,7 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
                 status=self.validated_data['status']).save()
             user.phone_number = self.validated_data['phone_number']
             user.is_staff = True
+            user.email_verified = True
         else:
             raise serializers.ValidationError(
                 {'message': 'Group is invalid'})
@@ -799,27 +799,27 @@ class RegistrationEmployerSerializer(serializers.ModelSerializer):
         
         return user
     
-    def send_mail(self):
-        user = User.objects.get(email=self.validated_data['email'])
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+    # def send_mail(self):
+    #     user = User.objects.get(email=self.validated_data['email'])
+    #     refresh = RefreshToken.for_user(user)
+    #     access_token = str(refresh.access_token)
         
-        user.forgot_password_token = access_token
-        user.save()
+    #     user.forgot_password_token = access_token
+    #     user.save()
 
-        link_active = settings.FRONTEND_SITE_URL_ACTIVE_ACCOUNT + \
-            ''.join(access_token)
-        message = render_to_string('api/mail/activate.html', {'link_active': link_active, 'user': user})
-        email_subject = 'Verify your email address for ' + user.email
-        send = EmailMessage(email_subject, message,
-                            from_email=settings.EMAIL_FROM, to=[self.validated_data['email']])
-        send.content_subtype = 'html'
-        try:
-            send.send()
-        except Exception as e:
-            print(e)
-            user.delete()
-        return True
+    #     link_active = settings.FRONTEND_SITE_URL_ACTIVE_ACCOUNT + \
+    #         ''.join(access_token)
+    #     message = render_to_string('api/mail/activate.html', {'link_active': link_active, 'user': user})
+    #     email_subject = 'Verify your email address for ' + user.email
+    #     send = EmailMessage(email_subject, message,
+    #                         from_email=settings.EMAIL_FROM, to=[self.validated_data['email']])
+    #     send.content_subtype = 'html'
+    #     try:
+    #         send.send()
+    #     except Exception as e:
+    #         print(e)
+    #         user.delete()
+    #     return True
 
 class LoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False, allow_blank=True)
@@ -895,46 +895,49 @@ class LoginSerializer(serializers.ModelSerializer):
         else:
             raise MyMessage({"message": msgError}, {'status_code': status.HTTP_400_BAD_REQUEST})
         # Validate login
-        if credentials['username'] and credentials['password']:
+        if credentials['email'] and credentials['password']:
             user = authenticate(request=self.context.get('request'),
-                                username=credentials['username'], password=credentials['password'])
+                                email=credentials['email'], password=credentials['password'])
             if not user:
                 raise MyMessage({"message": msgError}, {'status_code': status.HTTP_400_BAD_REQUEST})
-            else: 
-                # data = super().validate(attrs)
-                data = {}
+            else:
+                if user.email_verified is True:
+                    # data = super().validate(attrs)
+                    data = {}
 
-                refresh = self.get_token(user)
-                
-                if api_settings.UPDATE_LAST_LOGIN:
-                            update_last_login(None, self.user)
-                
-                data['message'] = "Login success"
-                data['results'] = {
-                    'user': {
-                        "id": user_obj.id,
-                        "email": user_obj.email,
-                        "first_name": user_obj.first_name,
-                        "last_name": user_obj.last_name,
-                        "gender": user_obj.gender,
-                        "phone_number": user_obj.phone_number,
-                        "city": user_obj.city,
-                        "address": user_obj.address,
-                        "email_verified": user_obj.email_verified,
-                        "is_active": user_obj.is_active,
-                        "is_staff": user_obj.is_staff,
-                    },
-                    # 'refresh': str(refresh),
-                    'access_token': str(refresh.access_token),
-                    'token_type': "Bearer",
-                    'expires_in': (timezone.now() + timedelta(api_settings.ACCESS_TOKEN_LIFETIME.days)).timestamp(),
-                    'created_at': timezone.now(),
-                }
-                # save token in database
-                user_obj.token = data['results']['access_token']
-                user_obj.expired = datetime.fromtimestamp(data['results']['expires_in'])
-                user_obj.save()
-                return data
+                    refresh = self.get_token(user)
+                    
+                    if api_settings.UPDATE_LAST_LOGIN:
+                                update_last_login(None, self.user)
+                    
+                    data['message'] = "Login success"
+                    data['results'] = {
+                        'user': {
+                            "id": user_obj.id,
+                            "email": user_obj.email,
+                            "first_name": user_obj.first_name,
+                            "last_name": user_obj.last_name,
+                            "gender": user_obj.gender,
+                            "phone_number": user_obj.phone_number,
+                            "city": user_obj.city,
+                            "address": user_obj.address,
+                            "email_verified": user_obj.email_verified,
+                            "is_active": user_obj.is_active,
+                            "is_staff": user_obj.is_staff,
+                        },
+                        # 'refresh': str(refresh),
+                        'access_token': str(refresh.access_token),
+                        'token_type': "Bearer",
+                        'expires_in': (timezone.now() + timedelta(api_settings.ACCESS_TOKEN_LIFETIME.days)).timestamp(),
+                        'created_at': timezone.now(),
+                    }
+                    # save token in database
+                    user_obj.token = data['results']['access_token']
+                    user_obj.expired = datetime.fromtimestamp(data['results']['expires_in'])
+                    user_obj.save()
+                    return data
+                else:
+                    raise MyMessage({"message": "Tài khoản của bạn chưa xác thực Email!"}, {'status_code': status.HTTP_400_BAD_REQUEST})
         # return super().validate(credentials)
    
 class MySimpleJWTSerializer(TokenObtainPairSerializer):
