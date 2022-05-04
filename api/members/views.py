@@ -99,8 +99,8 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             if serializer.follow_exists():
                 messages['Follow'] = "Follow has exists"
-            if not serializer.member_exists():
-                messages['Member'] = "Member not found"
+            if not serializer.employer_exists():
+                messages['Employer'] = "Employer not found"
             if messages:
                 return Response(messages, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
