@@ -85,7 +85,7 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
     
     def retrieve(self, request, id=None):
         try:
-            queryset = Follow.objects.get(member__user=request.user, member_id=id)
+            queryset = Follow.objects.get(member__user=request.user, pk=id)
             serializer = FollowSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -116,7 +116,7 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
                 queryset.delete()
                 return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                queryset = Follow.objects.get(Q(member_id=id), Q(member__user=request.user))
+                queryset = Follow.objects.get(Q(pk=id), Q(member__user=request.user))
                 queryset.delete()
                 return Response({'message': 'Delete follow successfully'}, status=status.HTTP_400_BAD_REQUEST)
         except:
