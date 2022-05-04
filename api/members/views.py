@@ -114,11 +114,11 @@ class FollowCompanyViewSet(viewsets.ModelViewSet):
                 if not queryset:
                     return Response({'follow': 'Follow Not Found'}, status=status.HTTP_400_BAD_REQUEST)
                 queryset.delete()
-                return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete all follow successfully'}, status=status.HTTP_200_OK)
             else:
                 queryset = Follow.objects.get(Q(employer__pk=id), Q(member__user=request.user))
                 queryset.delete()
-                return Response({'message': 'Delete follow successfully'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Delete follow successfully'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
         
