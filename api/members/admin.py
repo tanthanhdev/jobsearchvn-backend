@@ -61,3 +61,7 @@ class ApplyAdmin(admin.ModelAdmin):
     model = Apply
     list_display = ['pk', 'job', 'member']
 admin.site.register(Apply, ApplyAdmin)
+class RegisterNotificationAdmin(admin.ModelAdmin):
+    model = RegisterNotification
+    list_display = ['pk', 'job_name', 'cron_job']
+admin.site.register(RegisterNotification, RegisterNotificationAdmin)

@@ -211,7 +211,7 @@ class RegisterNotification(models.Model):
     salary = models.BigIntegerField(null=True, blank=True)
     currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES)
     cron_job = models.CharField(max_length=100, null=True, blank=True, choices=CRONJOB_CHOICES)
-    status = models.BooleanField(default=False, null=True, blank=True)
+    status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
