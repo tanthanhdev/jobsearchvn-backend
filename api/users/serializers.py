@@ -924,6 +924,7 @@ class LoginSerializer(serializers.ModelSerializer):
                             "email_verified": user_obj.email_verified,
                             "is_active": user_obj.is_active,
                             "is_staff": user_obj.is_staff,
+                            "is_superuser": user_obj.is_superuser,
                         },
                         # 'refresh': str(refresh),
                         'access_token': str(refresh.access_token),
