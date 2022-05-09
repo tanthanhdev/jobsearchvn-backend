@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'api.chats',
     'api.reviews',
     'api.blogs',
+    'api.analytics',
 ]
 
 MIDDLEWARE = [

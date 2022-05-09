@@ -1,0 +1,54 @@
+from functools import reduce
+from django.utils.timezone import now
+from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth.models import Group, Permission
+from rest_framework import viewsets
+from rest_framework import status
+from django.db.models import Q, query
+from collections import OrderedDict
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from api.users.models import User
+from .models import *
+from .serializers import AnalyticUserSerializer
+from .serializers import _is_token_valid, get_user_token
+from django.contrib.auth import logout
+from django.core.exceptions import ObjectDoesNotExist
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from api.users.permissions import IsTokenValid, IsEmployer, IsAdmin
+from operator import or_, and_
+# custom
+from api.users.custom_pagination import CustomPagination
+
+from api.users import status_http
+
+class AnalyticUserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    default_serializer_classes = AnalyticUserSerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsAdmin]
+    # permission_classes = []
+    pagination_class = CustomPagination
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request):
+        try:
+            queryset = User.objects.all()
+            serializer = AnalyticUserSerializer(queryset)
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = AnalyticUserSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = AnalyticUserSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({'user': 'User not found'}, status=status.HTTP_404_NOT_FOUND)

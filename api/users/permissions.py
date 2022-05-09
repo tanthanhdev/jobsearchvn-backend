@@ -29,3 +29,12 @@ class IsEmployer(BasePermission):
     
     def has_permission(self, request, view):
         return request.user and request.user.is_active and request.user.is_staff and request.user.email_verified
+
+class IsAdmin(BasePermission):
+    """
+    Allows access only to use in admin roles.
+    """
+    message = {'message': 'You are not a admin.'}
+    
+    def has_permission(self, request, view):
+        return request.user and request.user.is_active and request.user.is_staff and request.user.is_superuser

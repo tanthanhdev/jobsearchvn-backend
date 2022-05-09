@@ -40,4 +40,5 @@ urlpatterns = [
     path('', include('api.searches.urls')), # searches
     path('', include('api.cvs.urls')), # cvs
     path('', include('api.reviews.urls')), # reviews
+    path('', include('api.analytics.urls')), # analytics
 ]
