@@ -33,7 +33,7 @@ class AnalyticUserViewSet(viewsets.ModelViewSet):
     default_serializer_classes = AnalyticUserSerializer
     permission_classes = [IsAuthenticated, IsTokenValid, IsAdmin]
     # permission_classes = []
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
     # parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
@@ -42,12 +42,12 @@ class AnalyticUserViewSet(viewsets.ModelViewSet):
     def list(self, request):
         try:
             queryset = User.objects.all()
-            serializer = AnalyticUserSerializer(queryset)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = AnalyticUserSerializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
             serializer = AnalyticUserSerializer(queryset, many=True)
+            # page = self.paginate_queryset(queryset)
+            # if page is not None:
+            #     serializer = AnalyticUserSerializer(page, many=True)
+            #     return self.get_paginated_response(serializer.data)
+            # serializer = AnalyticUserSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
