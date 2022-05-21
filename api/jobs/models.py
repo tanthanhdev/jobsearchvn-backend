@@ -170,7 +170,7 @@ class Job(models.Model):
     currency = models.CharField(max_length=100, null=True, blank=True, choices=CURRENCY_CHOICES)
     web_link = models.CharField(max_length=255, null=True, blank=True)
     view_number = models.BigIntegerField(null=True, blank=True, default=0)
-    is_active = models.BooleanField(default=False, null=True, blank=True)
+    is_active = models.BooleanField(default=True, null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     #
