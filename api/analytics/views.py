@@ -14,8 +14,9 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.users.models import User
+from api.members.models import Apply
 from .models import *
-from .serializers import AnalyticUserSerializer
+from .serializers import AnalyticUserSerializer, AnalyticApplySerializer
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -52,3 +53,23 @@ class AnalyticUserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(e)
             return Response({'user': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class AnalyticApplyViewSet(viewsets.ModelViewSet):
+    queryset = Apply.objects.all()
+    default_serializer_classes = AnalyticApplySerializer
+    permission_classes = [IsAuthenticated, IsTokenValid, IsAdmin]
+    # permission_classes = []
+    # pagination_class = CustomPagination
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request):
+        try:
+            queryset = Apply.objects.all()
+            serializer = AnalyticApplySerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({'apply': 'Apply not found'}, status=status.HTTP_404_NOT_FOUND)

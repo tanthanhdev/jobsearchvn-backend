@@ -23,6 +23,7 @@ from api.users.serializers import (
     UserCustomPublicSerializer
 )
 from api.users.models import User
+from api.members.models import Apply
 from api.reviews.serializers import (ReviewCustomSerializer)
 # regex
 import re
@@ -68,3 +69,8 @@ class AnalyticUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email', 'is_active', 'is_staff', 'gender', 'date_joined', 'updated_at')
+        
+class AnalyticApplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Apply
+        fields = ('status', 'created_at', 'updated_at')
