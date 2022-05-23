@@ -328,10 +328,10 @@ class ApplyUpdateSerializer(serializers.ModelSerializer):
 class MemberUpdateSerializer(serializers.ModelSerializer):
     user = UserCustomPublicSerializer(required=False)
     avatar = serializers.ImageField(required=False)
-    resume = serializers.CharField(required=False)
-    salary = serializers.IntegerField(required=False)
+    resume = serializers.CharField(required=False, allow_null=True)
+    salary = serializers.IntegerField(required=False, allow_null=True)
     type = serializers.CharField(required=False)
-    currency = serializers.CharField(required=False)
+    currency = serializers.CharField(required=False, allow_null=True)
     birthday = serializers.DateField(required=False)
     #
     member_educations = EducationCustomSerializer(required=False, many=True)
