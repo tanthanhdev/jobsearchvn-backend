@@ -474,20 +474,21 @@ class CronJobJobsViewSet(viewsets.ModelViewSet):
                                          | Q(job_job_addresses__address__icontains=item.district)
                                          , Q(job_type__name__icontains=item.major)
                                          , Q(salary__gt=item.salary), Q(currency=item.currency)).order_by('-pk')[:3]
-                # send mail
-                try:
-                    message = render_to_string(
-                        'api/mail/template_jobs.html', {'jobs': jobs})
-                except Exception as e:
-                    print(e)
-                send = EmailMessage('Bạn đang có một số công việc phù hợp từ JobSearchVN!', message,
-                                    from_email=settings.EMAIL_FROM, to=[item.member.user.email])
-                send.content_subtype = 'html'
-                send.send()
-                # update mail sent all of them
-                for job in jobs:
-                    job.is_mail_sent = True
-                    job.save()
+                if jobs.count():
+                    # send mail
+                    try:
+                        message = render_to_string(
+                            'api/mail/template_jobs.html', {'jobs': jobs})
+                    except Exception as e:
+                        print(e)
+                    send = EmailMessage('Bạn đang có một số công việc phù hợp từ JobSearchVN!', message,
+                                        from_email=settings.EMAIL_FROM, to=[item.member.user.email])
+                    send.content_subtype = 'html'
+                    send.send()
+                    # update mail sent all of them
+                    for job in jobs:
+                        job.is_mail_sent = True
+                        job.save()
             return Response({"message": "success"}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'Cronjob not working'}, status=status.HTTP_400_BAD_REQUEST)
