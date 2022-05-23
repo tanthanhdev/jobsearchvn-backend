@@ -134,7 +134,7 @@ class EducationCustomSerializer(serializers.ModelSerializer):
     member = MemberPkSerializer(required=False)
     completion_date = serializers.DateField(required=False)
     starting_date = serializers.DateField(required=False)
-    gpa = serializers.IntegerField(required=False)
+    gpa = serializers.FloatField(required=False)
     major = serializers.CharField(required=False, allow_blank=True)
     university_name = serializers.CharField(required=False, allow_blank=True)
     class Meta:
