@@ -89,6 +89,10 @@ job_types_unauth_detail = JobTypeUnauthenticatedViewSet.as_view({
 apply_campaign_detail = ApplyCampaignViewSet.as_view({
     'get': 'retrieve', # get detail
 })
+# Cronjobs jobs
+cronjob_jobs_list = CronJobJobsViewSet.as_view({
+    'get': 'list', # Get lists
+})
 
 urlpatterns = [
     # dashboard
@@ -116,4 +120,6 @@ urlpatterns = [
     path('public/job-types/', job_types_unauth_list, name='job_types_unauth_list'),
     # Cv apply for campaign
     path('apply/campaigns/<slug:slug>/', apply_campaign_detail, name='apply_campaign_detail'),
+    # cronjobs mail sending jobs register
+    path('cronjob/jobs/', cronjob_jobs_list, name='cronjob_jobs_list'),
 ]

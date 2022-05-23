@@ -173,6 +173,7 @@ class Job(models.Model):
     is_active = models.BooleanField(default=True, null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
+    is_mail_sent = models.BooleanField(default=False)
     #
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

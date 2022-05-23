@@ -14,14 +14,14 @@ from collections import OrderedDict
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime    
 
-from api.members.models import Apply
+from api.members.models import Apply, RegisterNotification
 from api.members.serializers import ApplySerializer
 from .models import *
 from .serializers import (
     JobSerializer, JobUpdateSerializer, TagSerializer,
     CountrySerializer, CitySerializer, CampaignSerializer,
     CampaignUpdateSerializer, JobTypeSerializer,
-    SwitchActiveJobSerializer)
+    SwitchActiveJobSerializer, CronJobJobSerializer)
 from .serializers import _is_token_valid, get_user_token
 from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
@@ -33,6 +33,8 @@ from django.core import serializers
 
 from api.users.custom_pagination import CustomPagination
 from api.users import status_http
+from django.template.loader import render_to_string
+from django.core.mail import send_mail, EmailMessage
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
@@ -451,3 +453,42 @@ class JobTypeUnauthenticatedViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'JobType not found'}, status=status.HTTP_404_NOT_FOUND)
+
+# Cronjobs jobs (unauthorized)
+class CronJobJobsViewSet(viewsets.ModelViewSet):
+    queryset = RegisterNotification.objects.all()
+    default_serializer_classes = CronJobJobSerializer
+    permission_classes = []
+    pagination_class = None
+    lookup_field = 'slug'
+    # parser_classes = [MultiPartParser, FormParser]
+    
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_classes)
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            registerNotifications = RegisterNotification.objects.filter(status=True, cron_job=request.GET.get('cron_job', ''))
+            for item in registerNotifications:
+                jobs = Job.objects.filter(Q(title__icontains=item.job_name), Q(level=item.level)
+                                         | Q(job_job_addresses__address__icontains=item.district)
+                                         , Q(job_type__name__icontains=item.major)
+                                         , Q(salary__gt=item.salary), Q(currency=item.currency)).order_by('-pk')[:3]
+                # send mail
+                try:
+                    message = render_to_string(
+                        'api/mail/template_jobs.html', {'jobs': jobs})
+                except Exception as e:
+                    print(e)
+                send = EmailMessage('Bạn đang có một số công việc phù hợp từ JobSearchVN!', message,
+                                    from_email=settings.EMAIL_FROM, to=[item.member.user.email])
+                send.content_subtype = 'html'
+                send.send()
+                # update mail sent all of them
+                for job in jobs:
+                    job.is_mail_sent = True
+                    job.save()
+            return Response({"message": "success"}, status=status.HTTP_200_OK)
+        except:
+            return Response({'message': 'Cronjob not working'}, status=status.HTTP_400_BAD_REQUEST)
+        

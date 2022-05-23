@@ -211,7 +211,13 @@ class SwitchActiveJobSerializer(serializers.ModelSerializer):
         model = Job
         depth = 1
         fields = ("__all__")
-        
+
+class CronJobJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        # depth = 1
+        fields = ("__all__")
+    
 class JobSerializer(serializers.ModelSerializer):
     job_type_id = serializers.CharField(required=True)
     country_id = serializers.CharField(required=True)

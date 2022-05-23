@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>JobSearchVN</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+
+  <!-- google fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Style+Script&display=swap" rel="stylesheet">
+
+  <!-- fontawesome -->
+
+  <!-- bootstrap icon -->
+
+  <!-- style css -->
+  <!-- internal styles css -->
+
+</head>
+
+<body style="
+  box-sizing: border-box;
+  font-family: 'Barlow Condensed', sans-serif;
+  overflow: x;
+  ">
+  <!-- login Section -->
+  <section>
+    <td width="100%">
+      <table width="88%">
+        <tbody>
+          <tr>
+            <td height="35" style="height:35px"> &nbsp;</td>
+          </tr>
+          <tr>
+            <td width="100%"><span class="im">
+                <table style="padding:0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td class="m_-2789097947324895186welcome-message" style="padding-bottom:27px">
+                        <p
+                          style="font-family:Arial,sans-serif;font-size:16px;text-align:left;margin:0 0 0 0;color:#4a4a4a;line-height:21px">
+                          <strong>Công việc tốt nhất dành cho bạn:</strong>
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </span>
+              <table style="border-top:1px solid #e5e5e5" width="100%">
+                {% for job in jobs %}
+                <tbody>
+                  <tr>
+                    <td style="padding:20px 0 17px;border-bottom:1px solid #e5e5e5" width="70">
+                      <a href="https://www.jobsearchdtu.site/{{job.slug}}" style="outline:none" target="_blank">
+                        <img alt="" src="https://res.cloudinary.com/jobsearchvn/image/upload/v1/{{job.employer.logo}}"
+                          style="border:0;padding-right:10px;margin:auto;width:80px;height: auto;"/>
+                      </a>
+                    </td>
+                    <td style="padding:20px 0 17px;border-bottom:1px solid #e5e5e5">
+                      <table style="border-collapse:collapse" width="100%">
+                        <tbody>
+                          <tr>
+                            <td style="margin:0;padding:0">
+                              <table style="border-collapse:collapse;table-layout:fixed" width="100%">
+                                <tbody>
+                                  <tr>
+                                    <td style="margin:0;padding:0 10px 0 0">
+                                      <a href=""
+                                        style="color:#00b9f2;text-decoration:none;font-size:18px;line-height:20px;font-weight:700;outline:none;font-family:Arial,sans-serif"
+                                        target="_blank">
+                                        {{job.title}} [
+                                        {% for adr in job.job_job_addresses.all %}
+                                          {% if forloop.first %}
+                                            {{adr.city.name}}
+                                          {%else%}
+                                            {{adr.city.name|add:', '}}
+                                          {%endif%}
+                                        {% endfor %}
+                                        ]
+                                      </a>
+                                      <p
+                                        style="margin:5px 0 0 0;padding:3px 0 0;line-height:18px;color:#777777;font-weight:700;font-size:13.5px;font-family:Arial,sans-serif">
+                                        {{job.employer.company_name}}
+                                      </p>
+                                      <p
+                                        style="margin:0 0 2px 0;padding:0;color:#999999;font-size:13.5px;font-family:Arial,sans-serif;line-height:18px">
+                                        <span style="width:auto">
+                                          {% for adr in job.job_job_addresses.all %}
+                                            {% if forloop.first %}
+                                              {{adr.city.name}}
+                                            {%else%}
+                                              {{adr.city.name|add:', '}}
+                                            {%endif%}
+                                          {% endfor %}
+                                        </span>
+                                      </p>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+                {% endfor %}
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td height="20"> &nbsp;</td>
+          </tr>
+          <!-- <tr>
+            <td style="text-align:center" width="100%">
+              <table width="100%">
+                <tbody>
+                  <tr>
+                    <td width="100%">
+                      <table border="0" style="border-collapse:collapse"
+                        width="100%">
+                        <tbody>
+                          <tr>
+                            <td style="padding:0 3px 0 0" width="50%">
+                              <p class="m_-2789097947324895186btn-apply-wrapper"
+                                style="margin:0 2px 0 2px;text-align:center;background-color:#f7941d;border-radius:3px;border:1px solid #f7941d;padding:15px 0">
+                                <a class="m_-2789097947324895186btn-apply"
+                                  href="https://www. .com/ung-tuyen-nhieu-viec-lam/1514253_1512209_1504370_1490260_1502669_1508995_1503430_1509550_1442848_1507299?utm_source=EmailTopJobs&amp;utm_medium=ApplyAll&amp;utm_campaign=EmailTopJobs&amp;utm_content=SmartNaviIOP"
+                                  style="display:block;background-color:#f7941d;color:#ffffff;font-size:15px;font-weight:bold;outline:none;text-decoration:none;font-family:Arial,sans-serif"
+                                  target="_blank"
+                                  data-saferedirecturl="https://www.google.com/url?q=https://www. .com/ung-tuyen-nhieu-viec-lam/1514253_1512209_1504370_1490260_1502669_1508995_1503430_1509550_1442848_1507299?utm_source%3DEmailTopJobs%26utm_medium%3DApplyAll%26utm_campaign%3DEmailTopJobs%26utm_content%3DSmartNaviIOP&amp;source=gmail&amp;ust=1653402996766000&amp;usg=AOvVaw0E7VfHfNDJHFwBU3D4Jc2Y">
+                                  Ứng tuyển các vị trí trên </a></p>
+                            </td>
+                            <td style="padding:0 0 0 3px" width="50%">
+                              <p
+                                style="margin:0 2px 0 2px;text-align:center;border-radius:3px;border:1px solid #f7941d;padding:15px 0">
+                                <a class="m_-2789097947324895186btn-all-jobs"
+                                  href="https://www. .com/viec-lam-goi-y?utm_source=EmailTopJobs&amp;utm_medium=SeeAll&amp;utm_campaign=EmailTopJobs&amp;utm_content=SmartNaviIOP"
+                                  style="display:block;background-color:#ffffff;color:#f7941d;font-size:15px;font-weight:bold;outline:none;text-decoration:none;border-radius:3px;font-family:Arial,sans-serif"
+                                  target="_blank"
+                                  data-saferedirecturl="https://www.google.com/url?q=https://www. .com/viec-lam-goi-y?utm_source%3DEmailTopJobs%26utm_medium%3DSeeAll%26utm_campaign%3DEmailTopJobs%26utm_content%3DSmartNaviIOP&amp;source=gmail&amp;ust=1653402996766000&amp;usg=AOvVaw1i1lBcXizd6Zycakop1WPq">
+                                  Xem tất cả công việc</a></p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr> -->
+        </tbody>
+      </table>
+    </td>
+  </section>
+  <!-- login Section -->
+  <!-- bundle js -->
+</body>
+
+</html>
