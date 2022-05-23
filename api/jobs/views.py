@@ -473,7 +473,7 @@ class CronJobJobsViewSet(viewsets.ModelViewSet):
                 jobs = Job.objects.filter(Q(title__icontains=item.job_name)
                                          | Q(level=item.level)
                                          | Q(job_job_addresses__address__icontains=item.district)
-                                         , Q(job_type__name__icontains=item.major)
+                                         | Q(job_type__name__icontains=item.major)
                                          , Q(salary__gt=item.salary)
                                          , Q(currency=item.currency)
                                          , Q(is_mail_sent=False)).order_by('-pk')[:3]
