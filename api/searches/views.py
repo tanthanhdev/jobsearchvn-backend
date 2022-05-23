@@ -32,7 +32,7 @@ from api.users.custom_pagination import CustomPagination
 from datetime import datetime    
 
 class SearchJobViewSet(viewsets.ModelViewSet):
-    queryset = Job.objects.filter(Q(is_active=True), Q(end_time__gte=datetime.now()))
+    queryset = Job.objects.all()
     default_serializer_classes = JobSerializer
     permission_classes = []
     pagination_class = CustomPagination
@@ -41,19 +41,17 @@ class SearchJobViewSet(viewsets.ModelViewSet):
         return self.serializer_classes.get(self.action, self.default_serializer_classes)
     
     def list(self, request, *args, **kwargs):
-        queryset = self.queryset
-        query_string = request.GET.get('q')
-        address = request.GET.get('adr')
+        queryset = Job.objects.filter(Q(is_active=True), Q(end_time__gte=datetime.now()))
+        query_string = request.GET.get('q').strip()
+        address = request.GET.get('adr').strip()
         # filter here
         if query_string:
-            query_string = query_string.strip()
             queryset = queryset.filter(Q(title__icontains=query_string) | Q(employer__company_name__icontains=query_string)
                                           | Q(employer__company_location__icontains=query_string) 
                                           | Q(description__icontains=query_string)
                                           | Q(job_job_addresses__address__icontains=query_string))
         if address:
-            address = address.strip()
-            queryset = queryset.filter(Q(job_job_addresses__city__name__icontains=address))
+            queryset = queryset.filter(Q(job_job_addresses__city__name__icontains=address) | Q(job_job_addresses__address=address))
         if queryset.count() == 0:
             return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
         # pagination here
