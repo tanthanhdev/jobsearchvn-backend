@@ -51,7 +51,7 @@ class SearchJobViewSet(viewsets.ModelViewSet):
                                           | Q(description__icontains=query_string)
                                           | Q(job_job_addresses__address__icontains=query_string))
         if address:
-            queryset = queryset.filter(Q(job_job_addresses__city__name__icontains=address) | Q(job_job_addresses__address=address))
+            queryset = queryset.filter(Q(job_job_addresses__city__name__icontains=address) | Q(job_job_addresses__address__icontains=address))
         if queryset.count() == 0:
             return Response({'message': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
         # pagination here
