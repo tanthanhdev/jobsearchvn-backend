@@ -470,10 +470,13 @@ class CronJobJobsViewSet(viewsets.ModelViewSet):
         try:
             registerNotifications = RegisterNotification.objects.filter(status=True, cron_job=request.GET.get('cron_job', ''))
             for item in registerNotifications:
-                jobs = Job.objects.filter(Q(title__icontains=item.job_name), Q(level=item.level)
+                jobs = Job.objects.filter(Q(title__icontains=item.job_name)
+                                         | Q(level=item.level)
                                          | Q(job_job_addresses__address__icontains=item.district)
                                          , Q(job_type__name__icontains=item.major)
-                                         , Q(salary__gt=item.salary), Q(currency=item.currency)).order_by('-pk')[:3]
+                                         , Q(salary__gt=item.salary)
+                                         , Q(currency=item.currency)
+                                         , Q(is_mail_sent=False)).order_by('-pk')[:3]
                 if jobs.count():
                     # send mail
                     try:
